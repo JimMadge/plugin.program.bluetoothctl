@@ -2,6 +2,7 @@
 <addon id="program.bluetoothctl" name="Bluetoothctl" version="0.1.0" provider-name="jimmadge">
 	<requires>
 		<import addon="xbmc.python" version="3.0.0"/>
+		<import addon="xbmc.addon" version="18.9.701"/>
 		<import addon="xbmc.gui" version="5.15.0"/>
 	</requires>
 	<extension point="xbmc.python.script" library="addon.py">
