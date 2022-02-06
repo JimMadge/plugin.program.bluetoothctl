@@ -1,4 +1,5 @@
 import subprocess
+from .logging import loginfo, logerror
 
 
 class Bluetoothctl:
@@ -21,24 +22,22 @@ class Bluetoothctl:
         command = [self.executable, 'devices']
 
         try:
-            result = subprocess.run(command, check=True, capture_output=True,
-                                    encoding='utf8')
+            stdout = subprocess.check_output(command, encoding='utf8')
         except subprocess.CalledProcessError:
             return {}
 
-        return self.parse_devices_list(result.stdout)
+        return self.parse_devices_list(stdout)
 
     def get_paired_devices(self) -> dict[str, str]:
         """Create Dict of paired devices"""
         command = [self.executable, 'paired-devices']
 
         try:
-            result = subprocess.run(command, check=True, capture_output=True,
-                                    encoding='utf8')
+            stdout = subprocess.check_output(command, encoding='utf8')
         except subprocess.CalledProcessError:
             return {}
 
-        return self.parse_devices_list(result.stdout)
+        return self.parse_devices_list(stdout)
 
     @staticmethod
     def parse_devices_list(stdout: str) -> dict[str, str]:
@@ -54,3 +53,13 @@ class Bluetoothctl:
         }
 
         return devices
+
+    def connect(self, address: str) -> None:
+        """Connect to a device"""
+        command = ['connect', address]
+
+        try:
+            stdout = subprocess.check_output(command, encoding='utf8')
+            loginfo(stdout)
+        except subprocess.CalledProcessError:
+            logerror(stdout)
