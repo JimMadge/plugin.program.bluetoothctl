@@ -54,12 +54,14 @@ class Bluetoothctl:
 
         return devices
 
-    def connect(self, address: str) -> None:
+    def connect(self, address: str) -> str:
         """Connect to a device"""
         command = [self.executable, 'connect', address]
 
         try:
             stdout = subprocess.check_output(command, encoding='utf8')
             loginfo(stdout)
-        except subprocess.CalledProcessError:
-            logerror(stdout)
+            return stdout
+        except subprocess.CalledProcessError as e:
+            logerror(e.output)
+            return e.output

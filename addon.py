@@ -3,6 +3,7 @@ from contextlib import contextmanager
 import sys
 import urllib.parse
 import xbmc  # type: ignore
+import xbmcaddon  # type: ignore
 import xbmcgui  # type: ignore
 import xbmcplugin  # type: ignore
 from addon.bluetoothctl import Bluetoothctl
@@ -16,6 +17,9 @@ from addon.logging import loginfo
 base_url = sys.argv[0]
 addon_handle = int(sys.argv[1])
 args = urllib.parse.parse_qs(sys.argv[2][1:])
+
+addon = xbmcaddon.Addon()
+addon_name = addon.getAddonInfo('name')
 
 
 @contextmanager
@@ -97,9 +101,12 @@ elif mode[0] == 'paired_devices':
 elif mode[0] == 'connect':
     # Connect entry point
     bt = Bluetoothctl()
+    xbmc.executebuiltin('Notification(hello, hi)')
 
     device = args['device'][0]
     address = args['address'][0]
 
     loginfo(f'attempting connection to {device} {address}')
-    bt.connect(address)
+    message = bt.connect(address)
+
+    xbmc.executebuiltin(f'Notification({addon_name}, {message})')
