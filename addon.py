@@ -5,7 +5,8 @@ import urllib.parse
 import xbmc  # type: ignore
 import xbmcgui  # type: ignore
 import xbmcplugin  # type: ignore
-from lib.bluetoothctl import Bluetoothctl
+from addon.bluetoothctl import Bluetoothctl
+from addon.logging import loginfo
 
 # Get arguments
 # Each 'page' is a separate invocation of this script with it's path given by a
@@ -15,10 +16,6 @@ from lib.bluetoothctl import Bluetoothctl
 base_url = sys.argv[0]
 addon_handle = int(sys.argv[1])
 args = urllib.parse.parse_qs(sys.argv[2][1:])
-
-
-def loginfo(message: str) -> None:
-    xbmc.log(f'bluetoothctl: {message}', xbmc.LOGINFO)
 
 
 @contextmanager
