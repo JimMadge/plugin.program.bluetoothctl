@@ -77,3 +77,27 @@ class Bluetoothctl:
         except subprocess.CalledProcessError as e:
             logerror(e.output)
             return str(e.output)
+
+    def pair(self, address: str) -> str:
+        """Pair with a device (non-interactive"""
+        command = [self.executable, 'pair', address]
+
+        try:
+            stdout = subprocess.check_output(command, encoding='utf8')
+            loginfo(stdout)
+            return stdout
+        except subprocess.CalledProcessError as e:
+            logerror(e.output)
+            return str(e.output)
+
+    def remove(self, address: str) -> str:
+        """Remove device (revoke pairing)"""
+        command = [self.executable, 'remove', address]
+
+        try:
+            stdout = subprocess.check_output(command, encoding='utf8')
+            loginfo(stdout)
+            return stdout
+        except subprocess.CalledProcessError as e:
+            logerror(e.output)
+            return str(e.output)

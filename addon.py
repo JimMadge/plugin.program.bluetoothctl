@@ -69,6 +69,32 @@ def build_url_disconnect(device: str, address: str) -> str:
     )
 
 
+def build_url_pair(device: str, address: str) -> str:
+    """
+    Construct a url for the pair entry point.
+
+    Args:
+        device: Name of device
+        address: Address of device
+    """
+    return build_url(
+        {'mode': 'pair', 'device': device, 'address': address}
+    )
+
+
+def build_url_remove(device: str, address: str) -> str:
+    """
+    Construct a url for the remove entry point.
+
+    Args:
+        device: Name of device
+        address: Address of device
+    """
+    return build_url(
+        {'mode': 'remove', 'device': device, 'address': address}
+    )
+
+
 # Get 'mode' argument, default to None
 mode = args.get('mode', None)
 
@@ -97,12 +123,16 @@ elif mode[0] == 'available_devices':
         loginfo(f'listing device {device}')
         li = xbmcgui.ListItem(device)
         li.addContextMenuItems([
+            ('Pair', f'RunPlugin({build_url_pair(device, address)})'),
             ('Connect', f'RunPlugin({build_url_connect(device, address)})'),
             ('Disconnect',
              f'RunPlugin({build_url_disconnect(device, address)})')
         ])
-        xbmcplugin.addDirectoryItem(handle=addon_handle, url=base_url,
-                                    listitem=li)
+        xbmcplugin.addDirectoryItem(
+            handle=addon_handle,
+            url=build_url_pair(device, address),
+            listitem=li
+        )
 
     xbmcplugin.endOfDirectory(addon_handle)
 
@@ -118,7 +148,9 @@ elif mode[0] == 'paired_devices':
         li.addContextMenuItems([
             ('Connect', f'RunPlugin({build_url_connect(device, address)})'),
             ('Disconnect',
-             f'RunPlugin({build_url_disconnect(device, address)})')
+             f'RunPlugin({build_url_disconnect(device, address)})'),
+            ('Un-pair',
+             f'RunPlugin({build_url_remove(device, address)})')
         ])
         xbmcplugin.addDirectoryItem(
             handle=addon_handle,
@@ -149,5 +181,29 @@ elif mode[0] == 'disconnect':
 
     loginfo(f'attempting to disconnect from {device} {address}')
     message = bt.disconnect(address)
+
+    xbmc.executebuiltin(f'Notification({addon_name}, {message})')
+
+elif mode[0] == 'pair':
+    # Pair entry point
+    bt = Bluetoothctl()
+
+    device = args['device'][0]
+    address = args['address'][0]
+
+    loginfo(f'attempting to pair with {device} {address}')
+    message = bt.pair(address)
+
+    xbmc.executebuiltin(f'Notification({addon_name}, {message})')
+
+elif mode[0] == 'remove':
+    # Remove entry point
+    bt = Bluetoothctl()
+
+    device = args['device'][0]
+    address = args['address'][0]
+
+    loginfo(f'attempting to remove {device} {address}')
+    message = bt.remove(address)
 
     xbmc.executebuiltin(f'Notification({addon_name}, {message})')
