@@ -54,6 +54,11 @@ if mode is None:
     xbmcplugin.addDirectoryItem(handle=addon_handle, url=url,
                                 listitem=li, isFolder=True)
 
+    url = build_url({'mode': 'paired_devices'})
+    li = xbmcgui.ListItem('Paired Devices')
+    xbmcplugin.addDirectoryItem(handle=addon_handle, url=url,
+                                listitem=li, isFolder=True)
+
     xbmcplugin.endOfDirectory(addon_handle)
 
 elif mode[0] == 'available_devices':
@@ -62,6 +67,20 @@ elif mode[0] == 'available_devices':
     with busy_dialog():
         bt.scan()
         devices = bt.get_devices()
+
+    for device in devices:
+        loginfo(f'listing device {device}')
+        li = xbmcgui.ListItem(device)
+        xbmcplugin.addDirectoryItem(handle=addon_handle, url=base_url,
+                                    listitem=li)
+
+    xbmcplugin.endOfDirectory(addon_handle)
+
+elif mode[0] == 'paired_devices':
+    # Paired devices entry point
+    bt = Bluetoothctl()
+    with busy_dialog():
+        devices = bt.get_paired_devices()
 
     for device in devices:
         loginfo(f'listing device {device}')
