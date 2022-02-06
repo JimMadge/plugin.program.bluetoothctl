@@ -17,6 +17,10 @@ addon_handle = int(sys.argv[1])
 args = urllib.parse.parse_qs(sys.argv[2][1:])
 
 
+def loginfo(message: str) -> None:
+    xbmc.log(f'bluetoothctl: {message}', xbmc.LOGINFO)
+
+
 @contextmanager
 def busy_dialog() -> Generator[None, None, None]:
     """
@@ -57,9 +61,10 @@ elif mode[0] == 'available_devices':
     bt = Bluetoothctl()
     with busy_dialog():
         bt.scan()
-        devices = bt.devices()
+        devices = bt.get_devices()
 
     for device in devices:
+        loginfo(f'listing device {device}')
         li = xbmcgui.ListItem(device)
         xbmcplugin.addDirectoryItem(handle=addon_handle, url=base_url,
                                     listitem=li)

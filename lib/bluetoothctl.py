@@ -16,7 +16,7 @@ class Bluetoothctl:
 
         subprocess.run(command, check=True)
 
-    def devices(self) -> dict[str, str]:
+    def get_devices(self) -> dict[str, str]:
         """Create Dict of available devices"""
         command = [self.executable, 'devices']
 
@@ -26,7 +26,12 @@ class Bluetoothctl:
         except subprocess.CalledProcessError:
             return {}
 
-        return dict(
-            (item[2], item[1]) for item in
+        # The stdout of 'bluetoothctl devices' is in the format
+        # Device <device_address> <friendly_name>
+        # Construct a dictionary of friendly_name: device_address
+        devices = {
+            item[2]: item[1] for item in
             (line.split() for line in result.stdout.splitlines())
-        )
+        }
+
+        return devices
