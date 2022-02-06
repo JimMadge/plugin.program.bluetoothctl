@@ -1,7 +1,7 @@
 import sys
 import urllib.parse
-import xbmcgui
-import xbmcplugin
+import xbmcgui  # type: ignore
+import xbmcplugin  # type: ignore
 
 # Get arguments
 # Each 'page' is a separate invocation of this script with it's path given by a
@@ -13,7 +13,7 @@ addon_handle = int(sys.argv[1])
 args = urllib.parse.parse_qs(sys.argv[2][1:])
 
 
-def build_url(query: dict):
+def build_url(query: dict[str, str]) -> str:
     """
     Construct a url to recall this script with a set of arguments encoded in
     the query string.
