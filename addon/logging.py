@@ -1,4 +1,4 @@
-import xbmc
+import xbmc  # type: ignore
 
 
 def logdebug(message: str) -> None:
