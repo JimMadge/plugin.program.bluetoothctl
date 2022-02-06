@@ -79,10 +79,27 @@ elif mode[0] == 'paired_devices':
     with busy_dialog():
         devices = bt.get_paired_devices()
 
-    for device in devices:
+    for device, address in devices.items():
         loginfo(f'listing device {device}')
         li = xbmcgui.ListItem(device)
+        li.addContextMenuItems([
+            ('Connect', 'RunPlugin({})'.format(build_url({
+                'mode': 'connect',
+                'device': device,
+                'address': address
+            })))
+        ])
         xbmcplugin.addDirectoryItem(handle=addon_handle, url=base_url,
                                     listitem=li)
 
     xbmcplugin.endOfDirectory(addon_handle)
+
+elif mode[0] == 'connect':
+    # Connect entry point
+    bt = Bluetoothctl()
+
+    device = args['device'][0]
+    address = args['address'][0]
+
+    loginfo(f'attempting connection to {device} {address}')
+    bt.connect(address)
