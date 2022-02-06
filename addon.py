@@ -45,6 +45,17 @@ def build_url(query: dict[str, str]) -> str:
     return ''.join([base_url, '?', urllib.parse.urlencode(query)])
 
 
+def build_connect_url(device: str, address: str) -> str:
+    """
+    Construct a url for the connect entry point.
+
+    Args:
+        device: Name of device
+        address: Address of device
+    """
+    return build_url({'mode': 'connect', 'device': device, 'address': address})
+
+
 # Get 'mode' argument, default to None
 mode = args.get('mode', None)
 
@@ -69,9 +80,12 @@ elif mode[0] == 'available_devices':
         bt.scan()
         devices = bt.get_devices()
 
-    for device in devices:
+    for device, address in devices.items():
         loginfo(f'listing device {device}')
         li = xbmcgui.ListItem(device)
+        li.addContextMenuItems([
+            ('Connect', f'RunPlugin({build_connect_url(device, address)})')
+        ])
         xbmcplugin.addDirectoryItem(handle=addon_handle, url=base_url,
                                     listitem=li)
 
@@ -87,11 +101,7 @@ elif mode[0] == 'paired_devices':
         loginfo(f'listing device {device}')
         li = xbmcgui.ListItem(device)
         li.addContextMenuItems([
-            ('Connect', 'RunPlugin({})'.format(build_url({
-                'mode': 'connect',
-                'device': device,
-                'address': address
-            })))
+            ('Connect', f'RunPlugin({build_connect_url(device, address)})')
         ])
         xbmcplugin.addDirectoryItem(handle=addon_handle, url=base_url,
                                     listitem=li)
@@ -101,7 +111,6 @@ elif mode[0] == 'paired_devices':
 elif mode[0] == 'connect':
     # Connect entry point
     bt = Bluetoothctl()
-    xbmc.executebuiltin('Notification(hello, hi)')
 
     device = args['device'][0]
     address = args['address'][0]
