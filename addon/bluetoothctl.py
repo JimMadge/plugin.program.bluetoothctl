@@ -64,4 +64,16 @@ class Bluetoothctl:
             return stdout
         except subprocess.CalledProcessError as e:
             logerror(e.output)
-            return e.output
+            return str(e.output)
+
+    def disconnect(self, address: str) -> str:
+        """Disconnect from a device"""
+        command = [self.executable, 'disconnect', address]
+
+        try:
+            stdout = subprocess.check_output(command, encoding='utf8')
+            loginfo(stdout)
+            return stdout
+        except subprocess.CalledProcessError as e:
+            logerror(e.output)
+            return str(e.output)
