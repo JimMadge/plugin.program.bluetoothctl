@@ -120,8 +120,11 @@ elif mode[0] == 'paired_devices':
             ('Disconnect',
              f'RunPlugin({build_url_disconnect(device, address)})')
         ])
-        xbmcplugin.addDirectoryItem(handle=addon_handle, url=base_url,
-                                    listitem=li)
+        xbmcplugin.addDirectoryItem(
+            handle=addon_handle,
+            url=build_url_connect(device, address),
+            listitem=li
+        )
 
     xbmcplugin.endOfDirectory(addon_handle)
 
