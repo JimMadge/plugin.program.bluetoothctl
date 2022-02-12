@@ -21,7 +21,7 @@ def busy_dialog() -> Generator[None, None, None]:
         xbmc.executebuiltin('Dialog.Close(busydialognocancel)')
 
 
-def main(base_url: str, addon_handle: str, args: dict[str, str]):
+def main(base_url: str, addon_handle: str, args: dict[str, str]) -> None:
     # Create endpoint generating object
     endpoints = Endpoints(base_url)
 
@@ -58,13 +58,13 @@ def main(base_url: str, addon_handle: str, args: dict[str, str]):
             mode_disconnect(bt, device, address, addon_name)
         elif mode[0] == 'pair':
             # Pair endpoint
-            mode_pair(bt, args, addon_name)
+            mode_pair(bt, device, address, addon_name)
         elif mode[0] == 'remove':
             # Remove endpoint
-            mode_remove(bt, args, addon_name)
+            mode_remove(bt, device, address, addon_name)
 
 
-def mode_entry(endpoints, addon_handle):
+def mode_entry(endpoints: Endpoints, addon_handle: str) -> None:
     """Initial endpoint"""
     url = endpoints.build_url({'mode': 'available_devices'})
     li = xbmcgui.ListItem('Available Devices')
@@ -79,7 +79,8 @@ def mode_entry(endpoints, addon_handle):
     xbmcplugin.endOfDirectory(addon_handle)
 
 
-def mode_available_devices(bt, endpoints, addon_handle):
+def mode_available_devices(bt: Bluetoothctl, endpoints: Endpoints,
+                           addon_handle: str) -> None:
     with busy_dialog():
         bt.scan()
         devices = bt.get_devices()
@@ -104,7 +105,8 @@ def mode_available_devices(bt, endpoints, addon_handle):
     xbmcplugin.endOfDirectory(addon_handle)
 
 
-def mode_paired_devices(bt, endpoints, addon_handle):
+def mode_paired_devices(bt: Bluetoothctl, endpoints: Endpoints,
+                        addon_handle: str) -> None:
     with busy_dialog():
         devices = bt.get_paired_devices()
 
@@ -128,7 +130,8 @@ def mode_paired_devices(bt, endpoints, addon_handle):
     xbmcplugin.endOfDirectory(addon_handle)
 
 
-def mode_connect(bt, device, address, addon_name):
+def mode_connect(bt: Bluetoothctl, device: str, address: str,
+                 addon_name: str) -> None:
 
     loginfo(f'attempting connection to {device} {address}')
     message = bt.connect(address)
@@ -136,21 +139,24 @@ def mode_connect(bt, device, address, addon_name):
     xbmc.executebuiltin(f'Notification({addon_name}, {message})')
 
 
-def mode_disconnect(bt, device, address, addon_name):
+def mode_disconnect(bt: Bluetoothctl, device: str, address: str,
+                    addon_name: str) -> None:
     loginfo(f'attempting to disconnect from {device} {address}')
     message = bt.disconnect(address)
 
     xbmc.executebuiltin(f'Notification({addon_name}, {message})')
 
 
-def mode_pair(bt, device, address, addon_name):
+def mode_pair(bt: Bluetoothctl, device: str, address: str,
+              addon_name: str) -> None:
     loginfo(f'attempting to pair with {device} {address}')
     message = bt.pair(address)
 
     xbmc.executebuiltin(f'Notification({addon_name}, {message})')
 
 
-def mode_remove(bt, device, address, addon_name):
+def mode_remove(bt: Bluetoothctl, device: str, address: str,
+                addon_name: str) -> None:
     loginfo(f'attempting to remove {device} {address}')
     message = bt.remove(address)
 
