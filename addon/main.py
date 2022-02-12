@@ -32,7 +32,7 @@ def main(base_url: str, addon_handle: str, args: dict[str, str]):
     mode = args.get('mode', None)
 
     if mode is None:
-        # Initial entry point
+        # Initial endpoint
         url = endpoints.build_url({'mode': 'available_devices'})
         li = xbmcgui.ListItem('Available Devices')
         xbmcplugin.addDirectoryItem(handle=addon_handle, url=url,
@@ -46,7 +46,7 @@ def main(base_url: str, addon_handle: str, args: dict[str, str]):
         xbmcplugin.endOfDirectory(addon_handle)
 
     elif mode[0] == 'available_devices':
-        # Available devices entry point
+        # Available devices endpoint
         bt = Bluetoothctl()
         with busy_dialog():
             bt.scan()
@@ -72,7 +72,7 @@ def main(base_url: str, addon_handle: str, args: dict[str, str]):
         xbmcplugin.endOfDirectory(addon_handle)
 
     elif mode[0] == 'paired_devices':
-        # Paired devices entry point
+        # Paired devices endpoint
         bt = Bluetoothctl()
         with busy_dialog():
             devices = bt.get_paired_devices()
@@ -97,7 +97,7 @@ def main(base_url: str, addon_handle: str, args: dict[str, str]):
         xbmcplugin.endOfDirectory(addon_handle)
 
     elif mode[0] == 'connect':
-        # Connect entry point
+        # Connect endpoint
         bt = Bluetoothctl()
 
         device = args['device'][0]
@@ -109,7 +109,7 @@ def main(base_url: str, addon_handle: str, args: dict[str, str]):
         xbmc.executebuiltin(f'Notification({addon_name}, {message})')
 
     elif mode[0] == 'disconnect':
-        # Disconnect entry point
+        # Disconnect endpoint
         bt = Bluetoothctl()
 
         device = args['device'][0]
@@ -121,7 +121,7 @@ def main(base_url: str, addon_handle: str, args: dict[str, str]):
         xbmc.executebuiltin(f'Notification({addon_name}, {message})')
 
     elif mode[0] == 'pair':
-        # Pair entry point
+        # Pair endpoint
         bt = Bluetoothctl()
 
         device = args['device'][0]
@@ -133,7 +133,7 @@ def main(base_url: str, addon_handle: str, args: dict[str, str]):
         xbmc.executebuiltin(f'Notification({addon_name}, {message})')
 
     elif mode[0] == 'remove':
-        # Remove entry point
+        # Remove endpoint
         bt = Bluetoothctl()
 
         device = args['device'][0]
