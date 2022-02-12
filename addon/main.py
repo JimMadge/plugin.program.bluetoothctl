@@ -25,6 +25,10 @@ def main(base_url: str, addon_handle: str, args: dict[str, str]):
     # Create endpoint generating object
     endpoints = Endpoints(base_url)
 
+    # Create bluetoothctl object
+    bt = Bluetoothctl()
+
+    # Get addon name
     addon = xbmcaddon.Addon()
     addon_name = addon.getAddonInfo('name')
 
@@ -33,113 +37,128 @@ def main(base_url: str, addon_handle: str, args: dict[str, str]):
 
     if mode is None:
         # Initial endpoint
-        url = endpoints.build_url({'mode': 'available_devices'})
-        li = xbmcgui.ListItem('Available Devices')
-        xbmcplugin.addDirectoryItem(handle=addon_handle, url=url,
-                                    listitem=li, isFolder=True)
-
-        url = endpoints.build_url({'mode': 'paired_devices'})
-        li = xbmcgui.ListItem('Paired Devices')
-        xbmcplugin.addDirectoryItem(handle=addon_handle, url=url,
-                                    listitem=li, isFolder=True)
-
-        xbmcplugin.endOfDirectory(addon_handle)
-
+        mode_entry(endpoints, addon_handle)
     elif mode[0] == 'available_devices':
         # Available devices endpoint
-        bt = Bluetoothctl()
-        with busy_dialog():
-            bt.scan()
-            devices = bt.get_devices()
-
-        for device, address in devices.items():
-            loginfo(f'listing device {device}')
-            li = xbmcgui.ListItem(device)
-            li.addContextMenuItems([
-                ('Pair',
-                 f'RunPlugin({endpoints.build_url_pair(device, address)})'),
-                ('Connect',
-                 f'RunPlugin({endpoints.build_url_connect(device, address)})'),
-                ('Disconnect',
-                 f'RunPlugin({endpoints.build_url_disconnect(device, address)})')
-            ])
-            xbmcplugin.addDirectoryItem(
-                handle=addon_handle,
-                url=endpoints.build_url_pair(device, address),
-                listitem=li
-            )
-
-        xbmcplugin.endOfDirectory(addon_handle)
-
+        mode_available_devices(bt, endpoints, addon_handle)
     elif mode[0] == 'paired_devices':
         # Paired devices endpoint
-        bt = Bluetoothctl()
-        with busy_dialog():
-            devices = bt.get_paired_devices()
-
-        for device, address in devices.items():
-            loginfo(f'listing device {device}')
-            li = xbmcgui.ListItem(device)
-            li.addContextMenuItems([
-                ('Connect',
-                 f'RunPlugin({endpoints.build_url_connect(device, address)})'),
-                ('Disconnect',
-                 f'RunPlugin({endpoints.build_url_disconnect(device, address)})'),
-                ('Un-pair',
-                 f'RunPlugin({endpoints.build_url_remove(device, address)})')
-            ])
-            xbmcplugin.addDirectoryItem(
-                handle=addon_handle,
-                url=endpoints.build_url_connect(device, address),
-                listitem=li
-            )
-
-        xbmcplugin.endOfDirectory(addon_handle)
-
+        mode_paired_devices(bt, endpoints, addon_handle)
     elif mode[0] == 'connect':
         # Connect endpoint
-        bt = Bluetoothctl()
-
-        device = args['device'][0]
-        address = args['address'][0]
-
-        loginfo(f'attempting connection to {device} {address}')
-        message = bt.connect(address)
-
-        xbmc.executebuiltin(f'Notification({addon_name}, {message})')
-
+        mode_connect(bt, args, addon_name)
     elif mode[0] == 'disconnect':
         # Disconnect endpoint
-        bt = Bluetoothctl()
-
-        device = args['device'][0]
-        address = args['address'][0]
-
-        loginfo(f'attempting to disconnect from {device} {address}')
-        message = bt.disconnect(address)
-
-        xbmc.executebuiltin(f'Notification({addon_name}, {message})')
-
+        mode_disconnect(bt, args, addon_name)
     elif mode[0] == 'pair':
         # Pair endpoint
-        bt = Bluetoothctl()
-
-        device = args['device'][0]
-        address = args['address'][0]
-
-        loginfo(f'attempting to pair with {device} {address}')
-        message = bt.pair(address)
-
-        xbmc.executebuiltin(f'Notification({addon_name}, {message})')
-
+        mode_pair(bt, args, addon_name)
     elif mode[0] == 'remove':
         # Remove endpoint
-        bt = Bluetoothctl()
+        mode_remove(bt, args, addon_name)
 
-        device = args['device'][0]
-        address = args['address'][0]
 
-        loginfo(f'attempting to remove {device} {address}')
-        message = bt.remove(address)
+def mode_entry(endpoints, addon_handle):
+    """Initial endpoint"""
+    url = endpoints.build_url({'mode': 'available_devices'})
+    li = xbmcgui.ListItem('Available Devices')
+    xbmcplugin.addDirectoryItem(handle=addon_handle, url=url,
+                                listitem=li, isFolder=True)
 
-        xbmc.executebuiltin(f'Notification({addon_name}, {message})')
+    url = endpoints.build_url({'mode': 'paired_devices'})
+    li = xbmcgui.ListItem('Paired Devices')
+    xbmcplugin.addDirectoryItem(handle=addon_handle, url=url,
+                                listitem=li, isFolder=True)
+
+    xbmcplugin.endOfDirectory(addon_handle)
+
+
+def mode_available_devices(bt, endpoints, addon_handle):
+    with busy_dialog():
+        bt.scan()
+        devices = bt.get_devices()
+
+    for device, address in devices.items():
+        loginfo(f'listing device {device}')
+        li = xbmcgui.ListItem(device)
+        li.addContextMenuItems([
+            ('Pair',
+             f'RunPlugin({endpoints.build_url_pair(device, address)})'),
+            ('Connect',
+             f'RunPlugin({endpoints.build_url_connect(device, address)})'),
+            ('Disconnect',
+             f'RunPlugin({endpoints.build_url_disconnect(device, address)})')
+        ])
+        xbmcplugin.addDirectoryItem(
+            handle=addon_handle,
+            url=endpoints.build_url_pair(device, address),
+            listitem=li
+        )
+
+    xbmcplugin.endOfDirectory(addon_handle)
+
+
+def mode_paired_devices(bt, endpoints, addon_handle):
+    with busy_dialog():
+        devices = bt.get_paired_devices()
+
+    for device, address in devices.items():
+        loginfo(f'listing device {device}')
+        li = xbmcgui.ListItem(device)
+        li.addContextMenuItems([
+            ('Connect',
+             f'RunPlugin({endpoints.build_url_connect(device, address)})'),
+            ('Disconnect',
+             f'RunPlugin({endpoints.build_url_disconnect(device, address)})'),
+            ('Un-pair',
+             f'RunPlugin({endpoints.build_url_remove(device, address)})')
+        ])
+        xbmcplugin.addDirectoryItem(
+            handle=addon_handle,
+            url=endpoints.build_url_connect(device, address),
+            listitem=li
+        )
+
+    xbmcplugin.endOfDirectory(addon_handle)
+
+
+def mode_connect(bt, args, addon_name):
+    device = args['device'][0]
+    address = args['address'][0]
+
+    loginfo(f'attempting connection to {device} {address}')
+    message = bt.connect(address)
+
+    xbmc.executebuiltin(f'Notification({addon_name}, {message})')
+
+
+def mode_disconnect(bt, args, addon_name):
+    device = args['device'][0]
+    address = args['address'][0]
+
+    loginfo(f'attempting to disconnect from {device} {address}')
+    message = bt.disconnect(address)
+
+    xbmc.executebuiltin(f'Notification({addon_name}, {message})')
+
+
+def mode_pair(bt, args, addon_name):
+    bt = Bluetoothctl()
+
+    device = args['device'][0]
+    address = args['address'][0]
+
+    loginfo(f'attempting to pair with {device} {address}')
+    message = bt.pair(address)
+
+    xbmc.executebuiltin(f'Notification({addon_name}, {message})')
+
+
+def mode_remove(bt, args, addon_name):
+    device = args['device'][0]
+    address = args['address'][0]
+
+    loginfo(f'attempting to remove {device} {address}')
+    message = bt.remove(address)
+
+    xbmc.executebuiltin(f'Notification({addon_name}, {message})')
