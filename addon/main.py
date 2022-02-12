@@ -121,7 +121,8 @@ def mode_connect(bt: Bluetoothctl, device: str, address: str,
                  addon_name: str) -> None:
 
     loginfo(f'attempting connection to {device} {address}')
-    message = bt.connect(address)
+    with busy_dialog():
+        message = bt.connect(address)
 
     xbmc.executebuiltin(f'Notification({addon_name}, {message})')
 
@@ -129,7 +130,8 @@ def mode_connect(bt: Bluetoothctl, device: str, address: str,
 def mode_disconnect(bt: Bluetoothctl, device: str, address: str,
                     addon_name: str) -> None:
     loginfo(f'attempting to disconnect from {device} {address}')
-    message = bt.disconnect(address)
+    with busy_dialog():
+        message = bt.disconnect(address)
 
     xbmc.executebuiltin(f'Notification({addon_name}, {message})')
 
@@ -137,7 +139,8 @@ def mode_disconnect(bt: Bluetoothctl, device: str, address: str,
 def mode_pair(bt: Bluetoothctl, device: str, address: str,
               addon_name: str) -> None:
     loginfo(f'attempting to pair with {device} {address}')
-    message = bt.pair(address)
+    with busy_dialog():
+        message = bt.pair(address)
 
     xbmc.executebuiltin(f'Notification({addon_name}, {message})')
 
@@ -145,6 +148,7 @@ def mode_pair(bt: Bluetoothctl, device: str, address: str,
 def mode_remove(bt: Bluetoothctl, device: str, address: str,
                 addon_name: str) -> None:
     loginfo(f'attempting to remove {device} {address}')
-    message = bt.remove(address)
+    with busy_dialog():
+        message = bt.remove(address)
 
     xbmc.executebuiltin(f'Notification({addon_name}, {message})')
