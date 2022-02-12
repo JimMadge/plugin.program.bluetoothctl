@@ -1,24 +1,11 @@
-from collections.abc import Generator
-from contextlib import contextmanager
 import xbmc  # type: ignore
 import xbmcaddon  # type: ignore
 import xbmcgui  # type: ignore
 import xbmcplugin  # type: ignore
 from .bluetoothctl import Bluetoothctl
+from .busy_dialog import busy_dialog
 from .endpoints import Endpoints
 from .logging import loginfo
-
-
-@contextmanager
-def busy_dialog() -> Generator[None, None, None]:
-    """
-    Display a busy dialog box
-    """
-    xbmc.executebuiltin('ActivateWindow(busydialognocancel)')
-    try:
-        yield
-    finally:
-        xbmc.executebuiltin('Dialog.Close(busydialognocancel)')
 
 
 def main(base_url: str, addon_handle: str, args: dict[str, str]) -> None:
