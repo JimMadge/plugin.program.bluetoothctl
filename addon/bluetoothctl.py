@@ -62,8 +62,9 @@ class Bluetoothctl:
     @staticmethod
     def parse_devices_list(stdout: str) -> dict[str, str]:
         """
-        Construct a dictionary of friendly_name: device_address from
-        bluetoothctl stdout
+        Identify devices from bluetoothctl `devices` or `paired-devices` output
+
+        Returns: Dict of friendly_name: device_address
         """
         # The stdout of 'bluetoothctl devices' is in the format
         # Device <device_address> <friendly_name>
@@ -79,22 +80,26 @@ class Bluetoothctl:
         Connect to a device
 
         Returns: A CompletedProcess instance
+
+        Raises:
+            CalledProcessError: If bluetoothctl returns a non-zero exit code
         """
         command = [self.executable, 'connect', address]
 
         return subprocess.run(command, **self._run_args)
 
     def disconnect(self, address: str) -> str:
-        """Disconnect from a device"""
+        """
+        Disconnect from a device
+
+        Returns: A CompletedProcess instance
+
+        Raises:
+            CalledProcessError: If bluetoothctl returns a non-zero exit code
+        """
         command = [self.executable, 'disconnect', address]
 
-        try:
-            stdout = subprocess.check_output(command, encoding='utf8')
-            loginfo(stdout)
-            return stdout
-        except subprocess.CalledProcessError as e:
-            logerror(e.output)
-            return str(e.output)
+        return subprocess.run(command, **self._run_args)
 
     def pair(self, address: str) -> str:
         """Pair with a device (non-interactive"""

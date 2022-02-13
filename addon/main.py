@@ -150,7 +150,6 @@ def mode_paired_devices(bt: Bluetoothctl, endpoints: Endpoints,
 
 def mode_connect(bt: Bluetoothctl, device: str, address: str,
                  addon_name: str) -> None:
-
     dialog = xbmcgui.Dialog()
 
     loginfo(f'attempting connection to {device} {address}')
@@ -164,9 +163,9 @@ def mode_connect(bt: Bluetoothctl, device: str, address: str,
                 icon=xbmcgui.NOTIFICATION_INFO
             )
         except CalledProcessError as e:
-            logerror(f'connection failed failed.\n'
+            logerror(f'connection failed.\n'
                      f'return code: {e.returncode}\n'
-                     f'stdout: {e.stdout}'
+                     f'stdout: {e.stdout}\n'
                      f'stderr: e.stderr)')
             dialog.notification(
                 heading=addon_name,
@@ -177,11 +176,28 @@ def mode_connect(bt: Bluetoothctl, device: str, address: str,
 
 def mode_disconnect(bt: Bluetoothctl, device: str, address: str,
                     addon_name: str) -> None:
+    dialog = xbmcgui.Dialog()
+
     loginfo(f'attempting to disconnect from {device} {address}')
     with busy_dialog():
-        message = bt.disconnect(address)
-
-    xbmc.executebuiltin(f'Notification({addon_name}, {message})')
+        try:
+            bt.disconnect(address)
+            loginfo('disconnection successful')
+            dialog.notification(
+                heading=addon_name,
+                message='Disconnection successful',
+                icon=xbmcgui.NOTIFICATION_INFO
+            )
+        except CalledProcessError as e:
+            logerror(f'disconnection failed.\n'
+                     f'return code: {e.returncode}\n'
+                     f'stdout: {e.stdout}\n'
+                     f'stderr: e.stderr)')
+            dialog.notification(
+                heading=addon_name,
+                message='Disconnection failed',
+                icon=xbmcgui.NOTIFICATION_ERROR
+            )
 
 
 def mode_pair(bt: Bluetoothctl, device: str, address: str,
