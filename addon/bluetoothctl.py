@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import Any
 import subprocess
+from subprocess import CompletedProcess
 from .logging import loginfo, logerror
 
 
@@ -16,7 +17,7 @@ class Bluetoothctl:
         self.executable = '/usr/bin/bluetoothctl'
         self.scan_timeout = 5
 
-    def scan(self) -> subprocess.CompletedProcess[str]:
+    def scan(self) -> CompletedProcess[str]:
         """
         Scan for available devices
 
@@ -75,7 +76,7 @@ class Bluetoothctl:
 
         return devices
 
-    def connect(self, address: str) -> str:
+    def connect(self, address: str) -> CompletedProcess[str]:
         """
         Connect to a device
 
@@ -88,7 +89,7 @@ class Bluetoothctl:
 
         return subprocess.run(command, **self._run_args)
 
-    def disconnect(self, address: str) -> str:
+    def disconnect(self, address: str) -> CompletedProcess[str]:
         """
         Disconnect from a device
 
