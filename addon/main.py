@@ -53,15 +53,19 @@ def main(base_url: str, addon_handle: str, args: dict[str, str]) -> None:
 
 def mode_entry(endpoints: Endpoints, addon_handle: str) -> None:
     """Initial endpoint"""
-    url = endpoints.build_url({'mode': 'available_devices'})
-    li = xbmcgui.ListItem('Available Devices')
-    xbmcplugin.addDirectoryItem(handle=addon_handle, url=url,
-                                listitem=li, isFolder=True)
+    xbmcplugin.addDirectoryItem(
+        handle=addon_handle,
+        url=endpoints.build_url({'mode': 'available_devices'}),
+        listitem=xbmcgui.ListItem('Available Devices'),
+        isFolder=True
+    )
 
-    url = endpoints.build_url({'mode': 'paired_devices'})
-    li = xbmcgui.ListItem('Paired Devices')
-    xbmcplugin.addDirectoryItem(handle=addon_handle, url=url,
-                                listitem=li, isFolder=True)
+    xbmcplugin.addDirectoryItem(
+        handle=addon_handle,
+        url=endpoints.build_url({'mode': 'paired_devices'}),
+        listitem=xbmcgui.ListItem('Paired Devices'),
+        isFolder=True
+    )
 
     xbmcplugin.endOfDirectory(addon_handle)
 
