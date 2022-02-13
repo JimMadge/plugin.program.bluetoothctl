@@ -10,7 +10,6 @@ class Bluetoothctl:
     _run_args = {
         'capture_output': True,
         'encoding': 'utf8',
-        'check': True
     }  # type: dict[str, Any]
 
     def __init__(self) -> None:
@@ -22,9 +21,6 @@ class Bluetoothctl:
         Scan for available devices
 
         Returns: A CompletedProcess instance
-
-        Raises:
-            CalledProcessError: If bluetoothctl returns a non-zero exit code
         """
         command = [
             self.executable, '--timeout', str(self.scan_timeout), 'scan', 'on'
@@ -39,11 +35,11 @@ class Bluetoothctl:
         Returns: Dict of available device
 
         Raises:
-            CalledProcessError: If bluetoothctl returns a non-zero exit code
+            CalledProcessError: if bluetoothctl has a non-zero exit status
         """
         command = [self.executable, 'devices']
 
-        process = subprocess.run(command, **self._run_args)
+        process = subprocess.run(command, check=True, **self._run_args)
         return self.parse_devices_list(process.stdout)
 
     def get_paired_devices(self) -> dict[str, str]:
@@ -53,11 +49,11 @@ class Bluetoothctl:
         Returns: Dict of available device
 
         Raises:
-            CalledProcessError: If bluetoothctl returns a non-zero exit code
+            CalledProcessError: if bluetoothctl has a non-zero exit status
         """
         command = [self.executable, 'paired-devices']
 
-        process = subprocess.run(command, **self._run_args)
+        process = subprocess.run(command, check=True, **self._run_args)
         return self.parse_devices_list(process.stdout)
 
     @staticmethod
@@ -81,9 +77,6 @@ class Bluetoothctl:
         Connect to a device
 
         Returns: A CompletedProcess instance
-
-        Raises:
-            CalledProcessError: If bluetoothctl returns a non-zero exit code
         """
         command = [self.executable, 'connect', address]
 
@@ -94,9 +87,6 @@ class Bluetoothctl:
         Disconnect from a device
 
         Returns: A CompletedProcess instance
-
-        Raises:
-            CalledProcessError: If bluetoothctl returns a non-zero exit code
         """
         command = [self.executable, 'disconnect', address]
 

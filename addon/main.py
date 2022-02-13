@@ -74,24 +74,25 @@ def mode_entry(endpoints: Endpoints, addon_handle: str) -> None:
 def mode_available_devices(bt: Bluetoothctl, endpoints: Endpoints,
                            addon_handle: str) -> None:
     with busy_dialog():
-        try:
-            process = bt.scan()
-            logdebug(f'scanning succeeded.\nstdout: {process.stdout}')
-        except CalledProcessError as e:
-            logerror(f'scanning failed.\nreturn code: {e.returncode}\n'
-                     f'stdout: {e.stdout}'
-                     f'stderr: e.stderr)')
+        process = bt.scan()
 
-        try:
-            devices = bt.get_devices()
-            logdebug('getting available devices succeeded.'
-                     f'\ndevices: {devices}')
-        except CalledProcessError as e:
-            logerror(f'listing available devices failed.\n'
-                     f'return code: {e.returncode}\n'
-                     f'stdout: {e.stdout}'
-                     f'stderr: e.stderr)')
-            devices = {}
+    if process.returncode == 0:
+        logdebug(f'scanning succeeded.\nstdout: {process.stdout}')
+    else:
+        logerror(f'scanning failed.\nreturn code: {process.returncode}\n'
+                 f'stdout: {process.stdout}'
+                 f'stderr: process.stderr)')
+
+    try:
+        devices = bt.get_devices()
+        logdebug('getting available devices succeeded.'
+                 f'\ndevices: {devices}')
+    except CalledProcessError as e:
+        logerror(f'listing available devices failed.\n'
+                 f'return code: {e.returncode}\n'
+                 f'stdout: {e.stdout}'
+                 f'stderr: e.stderr)')
+        devices = {}
 
     for device, address in devices.items():
         logdebug(f'listing device {device}')
@@ -116,17 +117,16 @@ def mode_available_devices(bt: Bluetoothctl, endpoints: Endpoints,
 
 def mode_paired_devices(bt: Bluetoothctl, endpoints: Endpoints,
                         addon_handle: str) -> None:
-    with busy_dialog():
-        try:
-            devices = bt.get_paired_devices()
-            logdebug('getting paired devices succeeded.'
-                     f'\ndevices: {devices}')
-        except CalledProcessError as e:
-            logerror(f'listing paired devices failed.\n'
-                     f'return code: {e.returncode}\n'
-                     f'stdout: {e.stdout}'
-                     f'stderr: e.stderr)')
-            devices = {}
+    try:
+        devices = bt.get_paired_devices()
+        logdebug('getting paired devices succeeded.'
+                 f'\ndevices: {devices}')
+    except CalledProcessError as e:
+        logerror(f'listing paired devices failed.\n'
+                 f'return code: {e.returncode}\n'
+                 f'stdout: {e.stdout}'
+                 f'stderr: e.stderr)')
+        devices = {}
 
     for device, address in devices.items():
         logdebug(f'listing device {device}')
@@ -154,24 +154,25 @@ def mode_connect(bt: Bluetoothctl, device: str, address: str,
 
     loginfo(f'attempting connection to {device} {address}')
     with busy_dialog():
-        try:
-            bt.connect(address)
-            loginfo('connection successful')
-            dialog.notification(
-                heading=addon_name,
-                message='Connection successful',
-                icon=xbmcgui.NOTIFICATION_INFO
-            )
-        except CalledProcessError as e:
-            logerror(f'connection failed.\n'
-                     f'return code: {e.returncode}\n'
-                     f'stdout: {e.stdout}\n'
-                     f'stderr: e.stderr)')
-            dialog.notification(
-                heading=addon_name,
-                message='Connection failed',
-                icon=xbmcgui.NOTIFICATION_ERROR
-            )
+        process = bt.connect(address)
+
+    if process.returncode == 0:
+        loginfo('connection successful')
+        dialog.notification(
+            heading=addon_name,
+            message='Connection successful',
+            icon=xbmcgui.NOTIFICATION_INFO
+        )
+    else:
+        logerror(f'connection failed.\n'
+                 f'return code: {process.returncode}\n'
+                 f'stdout: {process.stdout}\n'
+                 f'stderr: process.stderr)')
+        dialog.notification(
+            heading=addon_name,
+            message='Connection failed',
+            icon=xbmcgui.NOTIFICATION_ERROR
+        )
 
 
 def mode_disconnect(bt: Bluetoothctl, device: str, address: str,
@@ -180,24 +181,25 @@ def mode_disconnect(bt: Bluetoothctl, device: str, address: str,
 
     loginfo(f'attempting to disconnect from {device} {address}')
     with busy_dialog():
-        try:
-            bt.disconnect(address)
-            loginfo('disconnection successful')
-            dialog.notification(
-                heading=addon_name,
-                message='Disconnection successful',
-                icon=xbmcgui.NOTIFICATION_INFO
-            )
-        except CalledProcessError as e:
-            logerror(f'disconnection failed.\n'
-                     f'return code: {e.returncode}\n'
-                     f'stdout: {e.stdout}\n'
-                     f'stderr: e.stderr)')
-            dialog.notification(
-                heading=addon_name,
-                message='Disconnection failed',
-                icon=xbmcgui.NOTIFICATION_ERROR
-            )
+        process = bt.disconnect(address)
+
+    if process.returncode == 0:
+        loginfo('disconnection successful')
+        dialog.notification(
+            heading=addon_name,
+            message='Disconnection successful',
+            icon=xbmcgui.NOTIFICATION_INFO
+        )
+    else:
+        logerror(f'disconnection failed.\n'
+                 f'return code: {process.returncode}\n'
+                 f'stdout: {process.stdout}\n'
+                 f'stderr: process.stderr)')
+        dialog.notification(
+            heading=addon_name,
+            message='Disconnection failed',
+            icon=xbmcgui.NOTIFICATION_ERROR
+        )
 
 
 def mode_pair(bt: Bluetoothctl, device: str, address: str,
