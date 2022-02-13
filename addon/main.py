@@ -1,5 +1,4 @@
 from subprocess import CalledProcessError
-import xbmc  # type: ignore
 import xbmcaddon  # type: ignore
 import xbmcgui  # type: ignore
 import xbmcplugin  # type: ignore
@@ -204,17 +203,53 @@ def mode_disconnect(bt: Bluetoothctl, device: str, address: str,
 
 def mode_pair(bt: Bluetoothctl, device: str, address: str,
               addon_name: str) -> None:
+    dialog = xbmcgui.Dialog()
+
     loginfo(f'attempting to pair with {device} {address}')
     with busy_dialog():
-        message = bt.pair(address)
+        process = bt.pair(address)
 
-    xbmc.executebuiltin(f'Notification({addon_name}, {message})')
+    if process.returncode == 0:
+        loginfo('pairing successful')
+        dialog.notification(
+            heading=addon_name,
+            message='Pairing successful',
+            icon=xbmcgui.NOTIFICATION_INFO
+        )
+    else:
+        logerror(f'Pairing failed.\n'
+                 f'return code: {process.returncode}\n'
+                 f'stdout: {process.stdout}\n'
+                 f'stderr: process.stderr)')
+        dialog.notification(
+            heading=addon_name,
+            message='Pairing failed',
+            icon=xbmcgui.NOTIFICATION_ERROR
+        )
 
 
 def mode_remove(bt: Bluetoothctl, device: str, address: str,
                 addon_name: str) -> None:
+    dialog = xbmcgui.Dialog()
+
     loginfo(f'attempting to remove {device} {address}')
     with busy_dialog():
-        message = bt.remove(address)
+        process = bt.remove(address)
 
-    xbmc.executebuiltin(f'Notification({addon_name}, {message})')
+    if process.returncode == 0:
+        loginfo('Removing successful')
+        dialog.notification(
+            heading=addon_name,
+            message='Removing successful',
+            icon=xbmcgui.NOTIFICATION_INFO
+        )
+    else:
+        logerror(f'Removing failed.\n'
+                 f'return code: {process.returncode}\n'
+                 f'stdout: {process.stdout}\n'
+                 f'stderr: process.stderr)')
+        dialog.notification(
+            heading=addon_name,
+            message='Removing failed',
+            icon=xbmcgui.NOTIFICATION_ERROR
+        )

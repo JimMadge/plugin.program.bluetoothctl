@@ -2,7 +2,6 @@ from __future__ import annotations
 from typing import Any
 import subprocess
 from subprocess import CompletedProcess
-from .logging import loginfo, logerror
 
 
 class Bluetoothctl:
@@ -22,10 +21,8 @@ class Bluetoothctl:
 
         Returns: A CompletedProcess instance
         """
-        command = [
-            self.executable, '--timeout', str(self.scan_timeout), 'scan', 'on'
-        ]
-
+        command = [self.executable, '--timeout', str(self.scan_timeout),
+                   'scan', 'on']
         return subprocess.run(command, **self._run_args)
 
     def get_devices(self) -> dict[str, str]:
@@ -79,7 +76,6 @@ class Bluetoothctl:
         Returns: A CompletedProcess instance
         """
         command = [self.executable, 'connect', address]
-
         return subprocess.run(command, **self._run_args)
 
     def disconnect(self, address: str) -> CompletedProcess[str]:
@@ -89,29 +85,22 @@ class Bluetoothctl:
         Returns: A CompletedProcess instance
         """
         command = [self.executable, 'disconnect', address]
-
         return subprocess.run(command, **self._run_args)
 
-    def pair(self, address: str) -> str:
-        """Pair with a device (non-interactive"""
+    def pair(self, address: str) -> CompletedProcess[str]:
+        """
+        Pair with a device (non-interactive)
+
+        Returns: A CompletedProcess instance
+        """
         command = [self.executable, 'pair', address]
+        return subprocess.run(command, **self._run_args)
 
-        try:
-            stdout = subprocess.check_output(command, encoding='utf8')
-            loginfo(stdout)
-            return stdout
-        except subprocess.CalledProcessError as e:
-            logerror(e.output)
-            return str(e.output)
+    def remove(self, address: str) -> CompletedProcess[str]:
+        """
+        Remove device (revoke pairing)
 
-    def remove(self, address: str) -> str:
-        """Remove device (revoke pairing)"""
+        Returns: A CompletedProcess instance
+        """
         command = [self.executable, 'remove', address]
-
-        try:
-            stdout = subprocess.check_output(command, encoding='utf8')
-            loginfo(stdout)
-            return stdout
-        except subprocess.CalledProcessError as e:
-            logerror(e.output)
-            return str(e.output)
+        return subprocess.run(command, **self._run_args)
