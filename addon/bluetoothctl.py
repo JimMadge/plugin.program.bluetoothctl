@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Any
 import subprocess
 from .logging import loginfo, logerror
 
@@ -9,13 +10,13 @@ class Bluetoothctl:
         'capture_output': True,
         'encoding': 'utf8',
         'check': True
-    }
+    }  # type: dict[str, Any]
 
     def __init__(self) -> None:
         self.executable = '/usr/bin/bluetoothctl'
         self.scan_timeout = 5
 
-    def scan(self) -> None:
+    def scan(self) -> subprocess.CompletedProcess[str]:
         """
         Scan for available devices
 
