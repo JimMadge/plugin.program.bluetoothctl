@@ -151,11 +151,28 @@ def mode_paired_devices(bt: Bluetoothctl, endpoints: Endpoints,
 def mode_connect(bt: Bluetoothctl, device: str, address: str,
                  addon_name: str) -> None:
 
+    dialog = xbmcgui.Dialog()
+
     loginfo(f'attempting connection to {device} {address}')
     with busy_dialog():
-        message = bt.connect(address)
-
-    xbmc.executebuiltin(f'Notification({addon_name}, {message})')
+        try:
+            bt.connect(address)
+            loginfo('connection successful')
+            dialog.notification(
+                heading=addon_name,
+                message='Connection successful',
+                icon=xbmcgui.NOTIFICATION_INFO
+            )
+        except CalledProcessError as e:
+            logerror(f'connection failed failed.\n'
+                     f'return code: {e.returncode}\n'
+                     f'stdout: {e.stdout}'
+                     f'stderr: e.stderr)')
+            dialog.notification(
+                heading=addon_name,
+                message='Connection failed',
+                icon=xbmcgui.NOTIFICATION_ERROR
+            )
 
 
 def mode_disconnect(bt: Bluetoothctl, device: str, address: str,
