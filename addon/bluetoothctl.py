@@ -11,12 +11,20 @@ class Bluetoothctl:
         self.scan_timeout = 5
 
     def scan(self) -> None:
-        """Scan for available devices"""
+        """
+        Scan for available devices
+
+        Returns: A CompletedProcess instance
+
+        Raises:
+            CalledProcessError: If bluetoothctl returns a non-zero exit code
+        """
         command = [
             self.executable, '--timeout', str(self.scan_timeout), 'scan', 'on'
         ]
 
-        subprocess.run(command, check=True)
+        return subprocess.run(command, capture_output=True, encoding='utf8',
+                              check=True)
 
     def get_devices(self) -> dict[str, str]:
         """Create Dict of available devices"""

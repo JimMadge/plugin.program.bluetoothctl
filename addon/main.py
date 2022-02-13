@@ -1,3 +1,4 @@
+from subprocess import CalledProcessError
 import xbmc  # type: ignore
 import xbmcaddon  # type: ignore
 import xbmcgui  # type: ignore
@@ -5,7 +6,7 @@ import xbmcplugin  # type: ignore
 from .bluetoothctl import Bluetoothctl
 from .busy_dialog import busy_dialog
 from .endpoints import Endpoints
-from .logging import loginfo
+from .logging import logerror, logdebug, loginfo
 
 
 def main(base_url: str, addon_handle: str, args: dict[str, str]) -> None:
@@ -73,11 +74,17 @@ def mode_entry(endpoints: Endpoints, addon_handle: str) -> None:
 def mode_available_devices(bt: Bluetoothctl, endpoints: Endpoints,
                            addon_handle: str) -> None:
     with busy_dialog():
-        bt.scan()
+        try:
+            process = bt.scan()
+            logdebug(f'scanning succeeded.\nstdout: {process.stdout}')
+        except CalledProcessError as e:
+            logerror(f'scanning failed.\nreturn code: {e.returncode}\n'
+                     f'stdout: {e.stdout}'
+                     f'stderr: e.stderr)')
         devices = bt.get_devices()
 
     for device, address in devices.items():
-        loginfo(f'listing device {device}')
+        logdebug(f'listing device {device}')
         li = xbmcgui.ListItem(device)
         li.addContextMenuItems([
             ('Pair',
@@ -102,7 +109,7 @@ def mode_paired_devices(bt: Bluetoothctl, endpoints: Endpoints,
         devices = bt.get_paired_devices()
 
     for device, address in devices.items():
-        loginfo(f'listing device {device}')
+        logdebug(f'listing device {device}')
         li = xbmcgui.ListItem(device)
         li.addContextMenuItems([
             ('Connect',
