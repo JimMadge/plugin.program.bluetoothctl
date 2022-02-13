@@ -5,6 +5,11 @@ from .logging import loginfo, logerror
 
 class Bluetoothctl:
     """Interact with the 'bluetoothctl' utility"""
+    _run_args = {
+        'capture_output': True,
+        'encoding': 'utf8',
+        'check': True
+    }
 
     def __init__(self) -> None:
         self.executable = '/usr/bin/bluetoothctl'
@@ -23,30 +28,35 @@ class Bluetoothctl:
             self.executable, '--timeout', str(self.scan_timeout), 'scan', 'on'
         ]
 
-        return subprocess.run(command, capture_output=True, encoding='utf8',
-                              check=True)
+        return subprocess.run(command, **self._run_args)
 
     def get_devices(self) -> dict[str, str]:
-        """Create Dict of available devices"""
+        """
+        List available devices
+
+        Returns: Dict of available device
+
+        Raises:
+            CalledProcessError: If bluetoothctl returns a non-zero exit code
+        """
         command = [self.executable, 'devices']
 
-        try:
-            stdout = subprocess.check_output(command, encoding='utf8')
-        except subprocess.CalledProcessError:
-            return {}
-
-        return self.parse_devices_list(stdout)
+        process = subprocess.run(command, **self._run_args)
+        return self.parse_devices_list(process.stdout)
 
     def get_paired_devices(self) -> dict[str, str]:
-        """Create Dict of paired devices"""
+        """
+        List paired devices
+
+        Returns: Dict of available device
+
+        Raises:
+            CalledProcessError: If bluetoothctl returns a non-zero exit code
+        """
         command = [self.executable, 'paired-devices']
 
-        try:
-            stdout = subprocess.check_output(command, encoding='utf8')
-        except subprocess.CalledProcessError:
-            return {}
-
-        return self.parse_devices_list(stdout)
+        process = subprocess.run(command, **self._run_args)
+        return self.parse_devices_list(process.stdout)
 
     @staticmethod
     def parse_devices_list(stdout: str) -> dict[str, str]:

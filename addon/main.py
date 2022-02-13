@@ -81,10 +81,21 @@ def mode_available_devices(bt: Bluetoothctl, endpoints: Endpoints,
             logerror(f'scanning failed.\nreturn code: {e.returncode}\n'
                      f'stdout: {e.stdout}'
                      f'stderr: e.stderr)')
-        devices = bt.get_devices()
+
+        try:
+            devices = bt.get_devices()
+            logdebug('getting available devices succeeded.'
+                     f'\ndevices: {devices}')
+        except CalledProcessError as e:
+            logerror(f'listing available devices failed.\n'
+                     f'return code: {e.returncode}\n'
+                     f'stdout: {e.stdout}'
+                     f'stderr: e.stderr)')
+            devices = {}
 
     for device, address in devices.items():
         logdebug(f'listing device {device}')
+
         li = xbmcgui.ListItem(device)
         li.addContextMenuItems([
             ('Pair',
@@ -106,7 +117,16 @@ def mode_available_devices(bt: Bluetoothctl, endpoints: Endpoints,
 def mode_paired_devices(bt: Bluetoothctl, endpoints: Endpoints,
                         addon_handle: str) -> None:
     with busy_dialog():
-        devices = bt.get_paired_devices()
+        try:
+            devices = bt.get_paired_devices()
+            logdebug('getting paired devices succeeded.'
+                     f'\ndevices: {devices}')
+        except CalledProcessError as e:
+            logerror(f'listing paired devices failed.\n'
+                     f'return code: {e.returncode}\n'
+                     f'stdout: {e.stdout}'
+                     f'stderr: e.stderr)')
+            devices = {}
 
     for device, address in devices.items():
         logdebug(f'listing device {device}')
