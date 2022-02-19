@@ -55,15 +55,14 @@ def mode_entry(endpoints: Endpoints, addon_handle: str) -> None:
     """Initial endpoint"""
     xbmcplugin.addDirectoryItem(
         handle=addon_handle,
-        url=endpoints.build_url({'mode': 'available_devices'}),
-        listitem=xbmcgui.ListItem('Available Devices'),
-        isFolder=True
-    )
-
-    xbmcplugin.addDirectoryItem(
-        handle=addon_handle,
         url=endpoints.build_url({'mode': 'paired_devices'}),
         listitem=xbmcgui.ListItem('Paired Devices'),
+        isFolder=True
+    )
+    xbmcplugin.addDirectoryItem(
+        handle=addon_handle,
+        url=endpoints.build_url({'mode': 'available_devices'}),
+        listitem=xbmcgui.ListItem('Available Devices'),
         isFolder=True
     )
 
@@ -82,16 +81,11 @@ def mode_available_devices(bt: Bluetoothctl, endpoints: Endpoints,
                  f'stdout: {process.stdout}'
                  f'stderr: process.stderr)')
 
-    try:
-        devices = bt.get_devices()
-        logdebug('getting available devices succeeded.'
-                 f'\ndevices: {devices}')
-    except CalledProcessError as e:
-        logerror(f'listing available devices failed.\n'
-                 f'return code: {e.returncode}\n'
-                 f'stdout: {e.stdout}'
-                 f'stderr: e.stderr)')
-        devices = {}
+    # Remove paired devices from list
+    devices = get_available_devices(bt)
+    paired_devices = get_paired_devices(bt)
+    for device in paired_devices.keys():
+        devices.pop(device, None)
 
     for device, address in devices.items():
         logdebug(f'listing device {device}')
@@ -116,16 +110,7 @@ def mode_available_devices(bt: Bluetoothctl, endpoints: Endpoints,
 
 def mode_paired_devices(bt: Bluetoothctl, endpoints: Endpoints,
                         addon_handle: str) -> None:
-    try:
-        devices = bt.get_paired_devices()
-        logdebug('getting paired devices succeeded.'
-                 f'\ndevices: {devices}')
-    except CalledProcessError as e:
-        logerror(f'listing paired devices failed.\n'
-                 f'return code: {e.returncode}\n'
-                 f'stdout: {e.stdout}'
-                 f'stderr: e.stderr)')
-        devices = {}
+    devices = get_paired_devices(bt)
 
     for device, address in devices.items():
         logdebug(f'listing device {device}')
@@ -145,6 +130,22 @@ def mode_paired_devices(bt: Bluetoothctl, endpoints: Endpoints,
         )
 
     xbmcplugin.endOfDirectory(addon_handle)
+
+
+def mode_device_view(bt: Bluetoothctl, endpoints: Endpoints, device: str,
+                     address: str, addon_handle: str, paired: bool) -> None:
+    if not paired:
+        xbmcplugin.addDirectoryItem(
+            handle=addon_handle,
+            listitem=xbmcgui.ListItem("Pair"),
+            url=endpoints.build_url_pair(device, address)
+        )
+    else:
+        xbmcplugin.addDirectoryItem(
+            handle=addon_handle,
+            listitem=xbmcgui.ListItem("Connect"),
+            url=endpoints.build_url_connect(device, address)
+        )
 
 
 def mode_connect(bt: Bluetoothctl, device: str, address: str,
@@ -253,3 +254,33 @@ def mode_remove(bt: Bluetoothctl, device: str, address: str,
             message='Removing failed',
             icon=xbmcgui.NOTIFICATION_ERROR
         )
+
+
+def get_available_devices(bt: Bluetoothctl) -> dict[str: str]:
+    try:
+        devices = bt.get_devices()
+        logdebug('getting available devices succeeded.'
+                 f'\ndevices: {devices}')
+    except CalledProcessError as e:
+        logerror(f'listing available devices failed.\n'
+                 f'return code: {e.returncode}\n'
+                 f'stdout: {e.stdout}'
+                 f'stderr: e.stderr)')
+        devices = {}
+
+    return devices
+
+
+def get_paired_devices(bt: Bluetoothctl) -> dict[str: str]:
+    try:
+        devices = bt.get_paired_devices()
+        logdebug('getting paired devices succeeded.'
+                 f'\ndevices: {devices}')
+    except CalledProcessError as e:
+        logerror(f'listing paired devices failed.\n'
+                 f'return code: {e.returncode}\n'
+                 f'stdout: {e.stdout}'
+                 f'stderr: e.stderr)')
+        devices = {}
+
+    return devices
