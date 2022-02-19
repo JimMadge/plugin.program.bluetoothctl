@@ -22,6 +22,20 @@ class Endpoints:
         """
         return ''.join([self.base_url, '?', urllib.parse.urlencode(query)])
 
+    def build_url_device(self, device: str, address: str, paired: bool) -> str:
+        """
+        Construct a url for the connect entry point.
+
+        Args:
+            device: Name of device
+            address: Address of device
+            paired: Whether the device is paired
+        """
+        return self.build_url(
+            {'mode': 'device', 'device': device, 'address': address,
+             'paired': str(paired)}
+        )
+
     def build_url_connect(self, device: str, address: str) -> str:
         """
         Construct a url for the connect entry point.

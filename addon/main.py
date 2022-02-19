@@ -33,11 +33,15 @@ def main(base_url: str, addon_handle: str, args: dict[str, str]) -> None:
         # Paired devices endpoint
         mode_paired_devices(bt, endpoints, addon_handle)
 
-    if mode[0] in ['connect', 'disconnect', 'pair', 'remove']:
+    if mode[0] in ['device', 'connect', 'disconnect', 'pair', 'remove']:
         device = args['device'][0]
         address = args['address'][0]
 
-        if mode[0] == 'connect':
+        if mode[0] == 'device':
+            # Device actions endpoint
+            paired = args['paired'][0]
+            mode_device(bt, endpoints, device, address, paired, addon_handle)
+        elif mode[0] == 'connect':
             # Connect endpoint
             mode_connect(bt, device, address, addon_name)
         elif mode[0] == 'disconnect':
@@ -96,13 +100,12 @@ def mode_available_devices(bt: Bluetoothctl, endpoints: Endpoints,
              f'RunPlugin({endpoints.build_url_pair(device, address)})'),
             ('Connect',
              f'RunPlugin({endpoints.build_url_connect(device, address)})'),
-            ('Disconnect',
-             f'RunPlugin({endpoints.build_url_disconnect(device, address)})')
         ])
         xbmcplugin.addDirectoryItem(
             handle=addon_handle,
-            url=endpoints.build_url_pair(device, address),
-            listitem=li
+            url=endpoints.build_url_device(device, address, paired=False),
+            listitem=li,
+            isFolder=True
         )
 
     xbmcplugin.endOfDirectory(addon_handle)
@@ -125,27 +128,49 @@ def mode_paired_devices(bt: Bluetoothctl, endpoints: Endpoints,
         ])
         xbmcplugin.addDirectoryItem(
             handle=addon_handle,
-            url=endpoints.build_url_connect(device, address),
-            listitem=li
+            url=endpoints.build_url_device(device, address, paired=True),
+            listitem=li,
+            isFolder=True
         )
 
     xbmcplugin.endOfDirectory(addon_handle)
 
 
-def mode_device_view(bt: Bluetoothctl, endpoints: Endpoints, device: str,
-                     address: str, addon_handle: str, paired: bool) -> None:
-    if not paired:
-        xbmcplugin.addDirectoryItem(
-            handle=addon_handle,
-            listitem=xbmcgui.ListItem("Pair"),
-            url=endpoints.build_url_pair(device, address)
-        )
-    else:
+def mode_device(bt: Bluetoothctl, endpoints: Endpoints, device: str,
+                address: str, paired: str, addon_handle: str) -> None:
+    logdebug(f'paired: {paired}')
+    logdebug(f'type of paired: {type(paired)}')
+    if paired == str(True):
+        logdebug('paired == True')
         xbmcplugin.addDirectoryItem(
             handle=addon_handle,
             listitem=xbmcgui.ListItem("Connect"),
             url=endpoints.build_url_connect(device, address)
         )
+        xbmcplugin.addDirectoryItem(
+            handle=addon_handle,
+            listitem=xbmcgui.ListItem("Disconnect"),
+            url=endpoints.build_url_disconnect(device, address)
+        )
+        xbmcplugin.addDirectoryItem(
+            handle=addon_handle,
+            listitem=xbmcgui.ListItem("Unpair"),
+            url=endpoints.build_url_disconnect(device, address)
+        )
+    elif paired == str(False):
+        logdebug('paired == False')
+        xbmcplugin.addDirectoryItem(
+            handle=addon_handle,
+            listitem=xbmcgui.ListItem("Pair"),
+            url=endpoints.build_url_pair(device, address)
+        )
+        xbmcplugin.addDirectoryItem(
+            handle=addon_handle,
+            listitem=xbmcgui.ListItem("Connect"),
+            url=endpoints.build_url_connect(device, address)
+        )
+
+    xbmcplugin.endOfDirectory(addon_handle)
 
 
 def mode_connect(bt: Bluetoothctl, device: str, address: str,
@@ -256,7 +281,7 @@ def mode_remove(bt: Bluetoothctl, device: str, address: str,
         )
 
 
-def get_available_devices(bt: Bluetoothctl) -> dict[str: str]:
+def get_available_devices(bt: Bluetoothctl) -> dict[str, str]:
     try:
         devices = bt.get_devices()
         logdebug('getting available devices succeeded.'
@@ -271,7 +296,7 @@ def get_available_devices(bt: Bluetoothctl) -> dict[str: str]:
     return devices
 
 
-def get_paired_devices(bt: Bluetoothctl) -> dict[str: str]:
+def get_paired_devices(bt: Bluetoothctl) -> dict[str, str]:
     try:
         devices = bt.get_paired_devices()
         logdebug('getting paired devices succeeded.'
