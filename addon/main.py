@@ -1,4 +1,5 @@
-from subprocess import CalledProcessError
+from subprocess import CalledProcessError, CompletedProcess
+from typing import Callable
 import xbmcaddon  # type: ignore
 import xbmcgui  # type: ignore
 import xbmcplugin  # type: ignore
@@ -22,6 +23,25 @@ def main(base_url: str, addon_handle: str, args: dict[str, str]) -> None:
     # Get 'mode' argument, default to None
     mode = args.get('mode', None)
 
+    mode_connect = device_action_mode_factory(
+        'connect', 'connecting', bt.connect, addon_name
+    )
+    mode_disconnect = device_action_mode_factory(
+        'disconnect', 'disconnecting', bt.disconnect, addon_name
+    )
+    mode_pair = device_action_mode_factory(
+        'pair', 'pairing', bt.pair, addon_name
+    )
+    mode_remove = device_action_mode_factory(
+        'remove', 'removing', bt.remove, addon_name
+    )
+    mode_trust = device_action_mode_factory(
+        'trust', 'trusting', bt.trust, addon_name
+    )
+    mode_untrust = device_action_mode_factory(
+        'revoke trust', 'revoking trust', bt.trust, addon_name
+    )
+
     if mode is None:
         # Initial endpoint
         mode_entry(endpoints, addon_handle)
@@ -44,22 +64,22 @@ def main(base_url: str, addon_handle: str, args: dict[str, str]) -> None:
             mode_device(bt, endpoints, device, address, paired, addon_handle)
         elif mode[0] == 'connect':
             # Connect endpoint
-            mode_connect(bt, device, address, addon_name)
+            mode_connect(device, address)
         elif mode[0] == 'disconnect':
             # Disconnect endpoint
-            mode_disconnect(bt, device, address, addon_name)
+            mode_disconnect(device, address)
         elif mode[0] == 'pair':
             # Pair endpoint
-            mode_pair(bt, device, address, addon_name)
+            mode_pair(device, address)
         elif mode[0] == 'remove':
             # Remove endpoint
-            mode_remove(bt, device, address, addon_name)
+            mode_remove(device, address)
         elif mode[0] == 'trust':
             # Trust endpoint
-            mode_trust(bt, device, address, addon_name)
+            mode_trust(device, address)
         elif mode[0] == 'untrust':
             # Untrust endpoint
-            mode_untrust(bt, device, address, addon_name)
+            mode_untrust(device, address)
 
 
 def mode_entry(endpoints: Endpoints, addon_handle: str) -> None:
@@ -190,166 +210,49 @@ def mode_device(bt: Bluetoothctl, endpoints: Endpoints, device: str,
     xbmcplugin.endOfDirectory(addon_handle)
 
 
-def mode_connect(bt: Bluetoothctl, device: str, address: str,
-                 addon_name: str) -> None:
-    dialog = xbmcgui.Dialog()
+def device_action_mode_factory(
+    infinitive: str, present: str,
+    bt_method: Callable[[str], CompletedProcess[str]], addon_name: str
+) -> Callable[[str, str], None]:
+    """
+    Create a 'mode function' for running a bluetoothctl action on a device e.g.
+    connecting, pairing. This function handles running the method as well as
+    logging and errors.
 
-    loginfo(f'attempting connection to {device} {address}')
-    with busy_dialog():
-        process = bt.connect(address)
+    Args:
+        infinitive: Infinitive verb e.g. 'trust', 'pair'.
+        present: Present tense verb e.g. 'trusting', 'pairing'.
+        bt_method: Method of `Bluetoothctl` object to call. It is expected that
+            the method takes the device address as the only argument.
+        addon_name: Name of the addon.
+    """
 
-    if process.returncode == 0:
-        loginfo('connection successful')
-        dialog.notification(
-            heading=addon_name,
-            message='Connection successful',
-            icon=xbmcgui.NOTIFICATION_INFO
-        )
-    else:
-        logerror(f'connection failed.\n'
-                 f'return code: {process.returncode}\n'
-                 f'stdout: {process.stdout}\n'
-                 f'stderr: process.stderr)')
-        dialog.notification(
-            heading=addon_name,
-            message='Connection failed',
-            icon=xbmcgui.NOTIFICATION_ERROR
-        )
+    def func(device: str, address: str) -> None:
+        dialog = xbmcgui.Dialog()
 
+        loginfo(f'attempting to {infinitive}: {device} {address}')
+        with busy_dialog():
+            process = bt_method(address)
 
-def mode_disconnect(bt: Bluetoothctl, device: str, address: str,
-                    addon_name: str) -> None:
-    dialog = xbmcgui.Dialog()
+        if process.returncode == 0:
+            loginfo(f'{present} successful')
+            dialog.notification(
+                heading=addon_name,
+                message=f'{present} successful',
+                icon=xbmcgui.NOTIFICATION_INFO
+            )
+        else:
+            logerror(f'{present} failed.\n'
+                     f'return code: {process.returncode}\n'
+                     f'stdout: {process.stdout}\n'
+                     f'stderr: process.stderr)')
+            dialog.notification(
+                heading=addon_name,
+                message=f'{present} failed',
+                icon=xbmcgui.NOTIFICATION_ERROR
+            )
 
-    loginfo(f'attempting to disconnect from {device} {address}')
-    with busy_dialog():
-        process = bt.disconnect(address)
-
-    if process.returncode == 0:
-        loginfo('disconnection successful')
-        dialog.notification(
-            heading=addon_name,
-            message='Disconnection successful',
-            icon=xbmcgui.NOTIFICATION_INFO
-        )
-    else:
-        logerror(f'disconnection failed.\n'
-                 f'return code: {process.returncode}\n'
-                 f'stdout: {process.stdout}\n'
-                 f'stderr: process.stderr)')
-        dialog.notification(
-            heading=addon_name,
-            message='Disconnection failed',
-            icon=xbmcgui.NOTIFICATION_ERROR
-        )
-
-
-def mode_pair(bt: Bluetoothctl, device: str, address: str,
-              addon_name: str) -> None:
-    dialog = xbmcgui.Dialog()
-
-    loginfo(f'attempting to pair with {device} {address}')
-    with busy_dialog():
-        process = bt.pair(address)
-
-    if process.returncode == 0:
-        loginfo('pairing successful')
-        dialog.notification(
-            heading=addon_name,
-            message='Pairing successful',
-            icon=xbmcgui.NOTIFICATION_INFO
-        )
-    else:
-        logerror(f'pairing failed.\n'
-                 f'return code: {process.returncode}\n'
-                 f'stdout: {process.stdout}\n'
-                 f'stderr: process.stderr)')
-        dialog.notification(
-            heading=addon_name,
-            message='pairing failed',
-            icon=xbmcgui.NOTIFICATION_ERROR
-        )
-
-
-def mode_remove(bt: Bluetoothctl, device: str, address: str,
-                addon_name: str) -> None:
-    dialog = xbmcgui.Dialog()
-
-    loginfo(f'attempting to remove {device} {address}')
-    with busy_dialog():
-        process = bt.remove(address)
-
-    if process.returncode == 0:
-        loginfo('removing successful')
-        dialog.notification(
-            heading=addon_name,
-            message='trusting successful',
-            icon=xbmcgui.NOTIFICATION_INFO
-        )
-    else:
-        logerror(f'removing failed.\n'
-                 f'return code: {process.returncode}\n'
-                 f'stdout: {process.stdout}\n'
-                 f'stderr: process.stderr)')
-        dialog.notification(
-            heading=addon_name,
-            message='removing failed',
-            icon=xbmcgui.NOTIFICATION_ERROR
-        )
-
-
-def mode_trust(bt: Bluetoothctl, device: str, address: str,
-               addon_name: str) -> None:
-    dialog = xbmcgui.Dialog()
-
-    loginfo(f'attempting to trust {device} {address}')
-    with busy_dialog():
-        process = bt.trust(address)
-
-    if process.returncode == 0:
-        loginfo('trusting successful')
-        dialog.notification(
-            heading=addon_name,
-            message='trusting successful',
-            icon=xbmcgui.NOTIFICATION_INFO
-        )
-    else:
-        logerror(f'trusting failed.\n'
-                 f'return code: {process.returncode}\n'
-                 f'stdout: {process.stdout}\n'
-                 f'stderr: process.stderr)')
-        dialog.notification(
-            heading=addon_name,
-            message='trusting failed',
-            icon=xbmcgui.NOTIFICATION_ERROR
-        )
-
-
-def mode_untrust(bt: Bluetoothctl, device: str, address: str,
-                 addon_name: str) -> None:
-    dialog = xbmcgui.Dialog()
-
-    loginfo(f'attempting to revoke trust in {device} {address}')
-    with busy_dialog():
-        process = bt.trust(address)
-
-    if process.returncode == 0:
-        loginfo('revoking trust successful')
-        dialog.notification(
-            heading=addon_name,
-            message='revoking trust successful',
-            icon=xbmcgui.NOTIFICATION_INFO
-        )
-    else:
-        logerror(f'revoking trust failed.\n'
-                 f'return code: {process.returncode}\n'
-                 f'stdout: {process.stdout}\n'
-                 f'stderr: process.stderr)')
-        dialog.notification(
-            heading=addon_name,
-            message='revoking trust failed',
-            icon=xbmcgui.NOTIFICATION_ERROR
-        )
+    return func
 
 
 def get_available_devices(bt: Bluetoothctl) -> dict[str, str]:
