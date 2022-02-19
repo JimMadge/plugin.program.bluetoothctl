@@ -1,0 +1,23 @@
+---
+
+name: Release
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Create archive
+        run: zip -r plugin.program.bluetoothctl.zip plugin.program.bluetoothctl
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: plugin.program.bluetoothctl.zip
