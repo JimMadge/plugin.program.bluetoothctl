@@ -104,3 +104,21 @@ class Bluetoothctl:
         """
         command = [self.executable, 'remove', address]
         return subprocess.run(command, **self._run_args)
+
+    def trust(self, address: str) -> CompletedProcess[str]:
+        """
+        Trust a device
+
+        Returns: A CompletedProcess instance
+        """
+        command = [self.executable, 'trust', address]
+        return subprocess.run(command, **self._run_args)
+
+    def untrust(self, address: str) -> CompletedProcess[str]:
+        """
+        Revoke trust in a device
+
+        Returns: A CompletedProcess instance
+        """
+        command = [self.executable, 'untrust', address]
+        return subprocess.run(command, **self._run_args)

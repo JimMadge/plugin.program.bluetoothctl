@@ -83,3 +83,27 @@ class Endpoints:
         return self.build_url(
             {'mode': 'remove', 'device': device, 'address': address}
         )
+
+    def build_url_trust(self, device: str, address: str) -> str:
+        """
+        Construct a url for the trust entry point.
+
+        Args:
+            device: Name of device
+            address: Address of device
+        """
+        return self.build_url(
+            {'mode': 'trust', 'device': device, 'address': address}
+        )
+
+    def build_url_untrust(self, device: str, address: str) -> str:
+        """
+        Construct a url for the untrust entry point.
+
+        Args:
+            device: Name of device
+            address: Address of device
+        """
+        return self.build_url(
+            {'mode': 'untrust', 'device': device, 'address': address}
+        )
