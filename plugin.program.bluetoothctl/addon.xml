@@ -14,8 +14,9 @@
 		<license>GPL-3.0-only</license>
 		<language>en</language>
 		<source>https://github.com/JimMadge/program.bluetoothctl</source>
-        <assets>
-            <icon>resources/icon.png</icon>
-        </assets>
+		<assets>
+			<icon>resources/icon.png</icon>
+			<fanart>resources/fanart.jpg</fanart>
+		</assets>
 	</extension>
 </addon>
