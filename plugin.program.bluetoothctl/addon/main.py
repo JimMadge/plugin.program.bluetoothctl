@@ -165,10 +165,7 @@ def mode_paired_devices(bt: Bluetoothctl, endpoints: Endpoints,
 
 def mode_device(bt: Bluetoothctl, endpoints: Endpoints, device: str,
                 address: str, paired: str, addon_handle: str) -> None:
-    logdebug(f'paired: {paired}')
-    logdebug(f'type of paired: {type(paired)}')
     if paired == str(True):
-        logdebug('paired == True')
         xbmcplugin.addDirectoryItem(
             handle=addon_handle,
             listitem=xbmcgui.ListItem("Connect"),
@@ -195,7 +192,6 @@ def mode_device(bt: Bluetoothctl, endpoints: Endpoints, device: str,
             url=endpoints.build_url_untrust(device, address)
         )
     elif paired == str(False):
-        logdebug('paired == False')
         xbmcplugin.addDirectoryItem(
             handle=addon_handle,
             listitem=xbmcgui.ListItem("Pair"),
