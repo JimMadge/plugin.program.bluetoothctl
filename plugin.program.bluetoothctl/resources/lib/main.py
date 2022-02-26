@@ -9,7 +9,7 @@ from .endpoints import Endpoints
 from .logging import logerror, logdebug, loginfo
 
 
-def main(base_url: str, addon_handle: str, args: dict[str, str]) -> None:
+def main(base_url: str, addon_handle: str, args: dict[str, list[str]]) -> None:
     # Create endpoint generating object
     endpoints = Endpoints(base_url)
 

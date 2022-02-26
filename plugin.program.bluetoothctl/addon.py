@@ -8,7 +8,7 @@ from resources.lib.main import main
 # See
 # https://kodi.wiki/view/Audio-video_add-on_tutorial#Navigating_between_pages
 base_url = sys.argv[0]
-addon_handle = int(sys.argv[1])
+addon_handle = sys.argv[1]
 args = urllib.parse.parse_qs(sys.argv[2][1:])
 
 main(base_url, addon_handle, args)
