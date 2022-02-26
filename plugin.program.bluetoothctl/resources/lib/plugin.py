@@ -1,5 +1,5 @@
 import sys
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, TypeVar
 import urllib.parse
 import xbmcaddon  # type: ignore
 from .logging import logdebug
@@ -9,7 +9,7 @@ class PluginException(Exception):
     pass
 
 
-action_signature = Callable[[dict[str, str]], None]
+F = TypeVar('F', bound=Callable[[dict[str, str]], None])
 
 
 class Plugin:
@@ -34,10 +34,10 @@ class Plugin:
 
     def action(
         self, name: Optional[str] = None
-    ) -> Callable[[action_signature], action_signature]:
+    ) -> Callable[[F], F]:
         logdebug(f'name: {name}')
 
-        def inner(func: action_signature) -> action_signature:
+        def inner(func: F) -> F:
             nonlocal name
             if not callable(func):
                 raise PluginException(f'{func} is not callable')
