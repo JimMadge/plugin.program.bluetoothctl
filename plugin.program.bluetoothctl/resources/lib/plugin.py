@@ -55,10 +55,9 @@ class Plugin:
         return inner
 
     def build_url(self, action: Optional[str] = None, **kwargs: Any) -> str:
-        if action:
-            params = urllib.parse.urlencode({'action': action} | kwargs)
-        else:
-            params = urllib.parse.urlencode(kwargs)
+        params = urllib.parse.urlencode(
+            ({'action': action} if action else {}) | kwargs
+        )
         url = ''.join([self._base_url, '?', params])
         return url
 
