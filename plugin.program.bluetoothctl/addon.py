@@ -1,6 +1,6 @@
 import sys
 import urllib.parse
-from addon.main import main
+from resources.lib.main import main
 
 # Get arguments
 # Each 'page' is a separate invocation of this script with it's path given by a
