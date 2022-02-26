@@ -2,7 +2,7 @@ from subprocess import CalledProcessError, CompletedProcess
 from typing import Callable, Any
 import xbmcgui  # type: ignore
 import xbmcplugin  # type: ignore
-from resources.lib.simpleplugin import Plugin  # type: ignore
+from resources.lib.plugin import Plugin
 from resources.lib.bluetoothctl import Bluetoothctl
 from resources.lib.busy_dialog import busy_dialog
 from resources.lib.logging import logerror, logdebug, loginfo
@@ -11,17 +11,17 @@ plugin = Plugin()
 bt = Bluetoothctl()
 
 
-@plugin.action()  # type: ignore
-def root() -> None:
+@plugin.action
+def root(params: dict[str, str]) -> None:
     xbmcplugin.addDirectoryItem(
         handle=plugin.handle,
-        url=plugin.get_url(action='paired_devices'),
+        url=plugin.build_url(action='paired_devices'),
         listitem=xbmcgui.ListItem('paired devices'),
         isFolder=True
     )
     xbmcplugin.addDirectoryItem(
         handle=plugin.handle,
-        url=plugin.get_url(action='available_devices'),
+        url=plugin.build_url(action='available_devices'),
         listitem=xbmcgui.ListItem('available devices'),
         isFolder=True
     )
@@ -29,8 +29,8 @@ def root() -> None:
     xbmcplugin.endOfDirectory(plugin.handle)
 
 
-@plugin.action()  # type: ignore
-def available_devices() -> None:
+@plugin.action
+def available_devices(params: dict[str, str]) -> None:
     with busy_dialog():
         process = bt.scan()
 
@@ -55,8 +55,8 @@ def available_devices() -> None:
         # ])
         xbmcplugin.addDirectoryItem(
             handle=plugin.handle,
-            url=plugin.get_url(action='device', device=device, address=address,
-                               paired=False),
+            url=plugin.build_url(action='device', device=device,
+                                 address=address, paired=False),
             listitem=li,
             isFolder=True
         )
@@ -64,8 +64,8 @@ def available_devices() -> None:
     xbmcplugin.endOfDirectory(plugin.handle)
 
 
-@plugin.action()  # type: ignore
-def paired_devices() -> None:
+@plugin.action
+def paired_devices(param: dict[str, str]) -> None:
     devices = get_paired_devices(bt)
 
     for device, address in devices.items():
@@ -75,8 +75,8 @@ def paired_devices() -> None:
         # ])
         xbmcplugin.addDirectoryItem(
             handle=plugin.handle,
-            url=plugin.get_url(action='device', device=device, address=address,
-                               paired=True),
+            url=plugin.build_url(action='device', device=device,
+                                 address=address, paired=True),
             listitem=li,
             isFolder=True
         )
@@ -84,64 +84,59 @@ def paired_devices() -> None:
     xbmcplugin.endOfDirectory(plugin.handle)
 
 
-@plugin.action()  # type: ignore
-# def device(device: str, address: str, paired: str) -> None:
-def device(params: Any) -> None:
-    device = params.device
-    address = params.address
-    paired = params.paired
+@plugin.action
+def device(params: dict[str, str]) -> None:
+    device = params['device']
+    address = params['address']
+    paired = params['paired']
 
     if paired == str(True):
         xbmcplugin.addDirectoryItem(
             handle=plugin.handle,
             listitem=xbmcgui.ListItem("Connect"),
-            url=plugin.get_url(action='connect', device=device,
-                               address=address)
+            url=plugin.build_url(action='connect', device=device,
+                                 address=address)
         )
         xbmcplugin.addDirectoryItem(
             handle=plugin.handle,
             listitem=xbmcgui.ListItem("Disconnect"),
-            url=plugin.get_url(action='disconnect', device=device,
-                               address=address)
+            url=plugin.build_url(action='disconnect', device=device,
+                                 address=address)
         )
         xbmcplugin.addDirectoryItem(
             handle=plugin.handle,
             listitem=xbmcgui.ListItem("Unpair"),
-            url=plugin.get_url(action='unpair', device=device,
-                               address=address)
+            url=plugin.build_url(action='unpair', device=device,
+                                 address=address)
         )
         xbmcplugin.addDirectoryItem(
             handle=plugin.handle,
             listitem=xbmcgui.ListItem("Trust"),
-            url=plugin.get_url(action='trust', device=device,
-                               address=address)
+            url=plugin.build_url(action='trust', device=device,
+                                 address=address)
         )
         xbmcplugin.addDirectoryItem(
             handle=plugin.handle,
             listitem=xbmcgui.ListItem("Revoke trust"),
-            url=plugin.get_url(action='untrust', device=device,
-                               address=address)
+            url=plugin.build_url(action='untrust', device=device,
+                                 address=address)
         )
     elif paired == str(False):
         xbmcplugin.addDirectoryItem(
             handle=plugin.handle,
             listitem=xbmcgui.ListItem("Pair"),
-            url=plugin.get_url(action='pair', device=device, address=address)
+            url=plugin.build_url(action='pair', device=device, address=address)
         )
         xbmcplugin.addDirectoryItem(
             handle=plugin.handle,
             listitem=xbmcgui.ListItem("Connect"),
-            url=plugin.get_url(action='connect', device=device,
-                               address=address)
+            url=plugin.build_url(action='connect', device=device,
+                                 address=address)
         )
 
     xbmcplugin.endOfDirectory(plugin.handle)
 
 
-# def device_action_mode_factory(
-#     infinitive: str, present: str,
-#     bt_method: Callable[[str], CompletedProcess[str]], addon_name: str
-# ) -> Callable[[str, str], None]:
 def device_action_mode_factory(
     infinitive: str, present: str,
     bt_method: Callable[[str], CompletedProcess[str]], addon_name: str
@@ -159,10 +154,9 @@ def device_action_mode_factory(
         addon_name: Name of the addon.
     """
 
-    # def func(device: str, address: str) -> None:
-    def func(params: Any) -> None:
-        device = params.device
-        address = params.address
+    def func(params: dict[str, str]) -> None:
+        device = params['device']
+        address = params['address']
 
         dialog = xbmcgui.Dialog()
 
@@ -194,32 +188,32 @@ def device_action_mode_factory(
 connect = device_action_mode_factory(
     'connect', 'connecting', bt.connect, plugin.name
 )
-plugin.action('connect')(connect)
+plugin.action(connect)
 
 disconnect = device_action_mode_factory(
     'disconnect', 'disconnecting', bt.disconnect, plugin.name
 )
-plugin.action('disconnect')(disconnect)
+plugin.action(disconnect)
 
 pair = device_action_mode_factory(
     'pair', 'pairing', bt.pair, plugin.name
 )
-plugin.action('pair')(pair)
+plugin.action(pair)
 
 remove = device_action_mode_factory(
     'remove', 'removing', bt.remove, plugin.name
 )
-plugin.action('remove')(remove)
+plugin.action(remove)
 
 trust = device_action_mode_factory(
     'trust', 'trusting', bt.trust, plugin.name
 )
-plugin.action('trust')(trust)
+plugin.action(trust)
 
 untrust = device_action_mode_factory(
     'revoke trust', 'revoking trust', bt.trust, plugin.name
 )
-plugin.action('untrust')(untrust)
+plugin.action(untrust)
 
 
 def get_available_devices(bt: Bluetoothctl) -> dict[str, str]:
