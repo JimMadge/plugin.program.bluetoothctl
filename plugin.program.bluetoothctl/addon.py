@@ -1,5 +1,5 @@
 from subprocess import CalledProcessError, CompletedProcess
-from typing import Callable, Any
+from typing import Callable
 import xbmcgui  # type: ignore
 import xbmcplugin  # type: ignore
 from resources.lib.plugin import Plugin
@@ -11,7 +11,7 @@ plugin = Plugin()
 bt = Bluetoothctl()
 
 
-@plugin.action
+@plugin.action()
 def root(params: dict[str, str]) -> None:
     xbmcplugin.addDirectoryItem(
         handle=plugin.handle,
@@ -29,7 +29,7 @@ def root(params: dict[str, str]) -> None:
     xbmcplugin.endOfDirectory(plugin.handle)
 
 
-@plugin.action
+@plugin.action()
 def available_devices(params: dict[str, str]) -> None:
     with busy_dialog():
         process = bt.scan()
@@ -64,7 +64,7 @@ def available_devices(params: dict[str, str]) -> None:
     xbmcplugin.endOfDirectory(plugin.handle)
 
 
-@plugin.action
+@plugin.action()
 def paired_devices(param: dict[str, str]) -> None:
     devices = get_paired_devices(bt)
 
@@ -84,7 +84,7 @@ def paired_devices(param: dict[str, str]) -> None:
     xbmcplugin.endOfDirectory(plugin.handle)
 
 
-@plugin.action
+@plugin.action()
 def device(params: dict[str, str]) -> None:
     device = params['device']
     address = params['address']
@@ -140,7 +140,7 @@ def device(params: dict[str, str]) -> None:
 def device_action_mode_factory(
     infinitive: str, present: str,
     bt_method: Callable[[str], CompletedProcess[str]], addon_name: str
-) -> Callable[[Any], None]:
+) -> Callable[[dict[str, str]], None]:
     """
     Create a 'mode function' for running a bluetoothctl action on a device e.g.
     connecting, pairing. This function handles running the method as well as
@@ -188,32 +188,32 @@ def device_action_mode_factory(
 connect = device_action_mode_factory(
     'connect', 'connecting', bt.connect, plugin.name
 )
-plugin.action(connect)
+plugin.action('connect')(connect)
 
 disconnect = device_action_mode_factory(
     'disconnect', 'disconnecting', bt.disconnect, plugin.name
 )
-plugin.action(disconnect)
+plugin.action('disconnect')(disconnect)
 
 pair = device_action_mode_factory(
     'pair', 'pairing', bt.pair, plugin.name
 )
-plugin.action(pair)
+plugin.action('pair')(pair)
 
 remove = device_action_mode_factory(
     'remove', 'removing', bt.remove, plugin.name
 )
-plugin.action(remove)
+plugin.action('remove')(remove)
 
 trust = device_action_mode_factory(
     'trust', 'trusting', bt.trust, plugin.name
 )
-plugin.action(trust)
+plugin.action('trust')(trust)
 
 untrust = device_action_mode_factory(
     'revoke trust', 'revoking trust', bt.trust, plugin.name
 )
-plugin.action(untrust)
+plugin.action('untrust')(untrust)
 
 
 def get_available_devices(bt: Bluetoothctl) -> dict[str, str]:

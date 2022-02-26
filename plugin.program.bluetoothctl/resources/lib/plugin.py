@@ -9,6 +9,9 @@ class PluginException(Exception):
     pass
 
 
+action_signature = Callable[[dict[str, str]], None]
+
+
 class Plugin:
     def __init__(self) -> None:
         self._base_url = sys.argv[0]
@@ -29,18 +32,27 @@ class Plugin:
     def name(self) -> str:
         return str(self._addon.getAddonInfo('name'))
 
-    def action(self, func: Callable[[Any], None]) -> Callable[[Any], None]:
-        if not callable(func):
-            raise PluginException(f'{func} is not callable')
+    def action(
+        self, name: Optional[str] = None
+    ) -> Callable[[action_signature], action_signature]:
+        logdebug(f'name: {name}')
 
-        name = func.__name__
-        if name in self._actions.keys():
-            raise PluginException(f'action {name} already registered')
+        def inner(func: action_signature) -> action_signature:
+            nonlocal name
+            if not callable(func):
+                raise PluginException(f'{func} is not callable')
 
-        logdebug(f'registering action: {name}')
-        self._actions[name] = func
+            if name is None:
+                name = func.__name__
+            if name in self._actions.keys():
+                raise PluginException(f'action {name} already registered')
 
-        return func
+            logdebug(f'registering action: {name}')
+            self._actions[name] = func
+
+            return func
+
+        return inner
 
     def build_url(self, action: Optional[str] = None, **kwargs: Any) -> str:
         if action:
