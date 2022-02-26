@@ -5,13 +5,17 @@ import xbmcaddon  # type: ignore
 from .logging import logdebug
 
 
+class PluginException(Exception):
+    pass
+
+
 class Plugin:
     def __init__(self) -> None:
         self._base_url = sys.argv[0]
         self._handle = int(sys.argv[1])
         self._params = urllib.parse.parse_qs(sys.argv[2][1:])
         self._addon = xbmcaddon.Addon()
-        self._routes: dict[str, Callable[[dict[str, str]], None]] = {}
+        self._actions: dict[str, Callable[[dict[str, str]], None]] = {}
 
     @property
     def handle(self) -> int:
@@ -26,10 +30,15 @@ class Plugin:
         return str(self._addon.getAddonInfo('name'))
 
     def action(self, func: Callable[[Any], None]) -> Callable[[Any], None]:
-        assert callable(func)
+        if not callable(func):
+            raise PluginException(f'{func} is not callable')
+
         name = func.__name__
-        assert name not in self._routes.keys()
-        self._routes[name] = func
+        if name in self._actions.keys():
+            raise PluginException(f'action {name} already registered')
+
+        logdebug(f'registering action: {name}')
+        self._actions[name] = func
 
         return func
 
@@ -43,7 +52,7 @@ class Plugin:
 
     def run(self) -> None:
         logdebug(f'entering with parameters {self.params}')
-        logdebug(f'actions registered: {self._routes.keys()}')
+        logdebug(f'actions registered: {self._actions.keys()}')
         action = self.params.get('action', 'root')
 
-        self._routes[action](self.params)
+        self._actions[action](self.params)
