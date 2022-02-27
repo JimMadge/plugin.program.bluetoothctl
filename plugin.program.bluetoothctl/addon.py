@@ -22,13 +22,13 @@ def root(params: dict[str, str]) -> None:
     xbmcplugin.addDirectoryItem(
         handle=plugin.handle,
         url=plugin.build_url(action='paired_devices'),
-        listitem=xbmcgui.ListItem('paired devices'),
+        listitem=xbmcgui.ListItem(plugin.localise(30201)),
         isFolder=True
     )
     xbmcplugin.addDirectoryItem(
         handle=plugin.handle,
         url=plugin.build_url(action='available_devices'),
-        listitem=xbmcgui.ListItem('available devices'),
+        listitem=xbmcgui.ListItem(plugin.localise(30202)),
         isFolder=True
     )
 
@@ -129,55 +129,55 @@ def device(params: dict[str, str]) -> None:
     if paired == str(True):
         xbmcplugin.addDirectoryItem(
             handle=plugin.handle,
-            listitem=xbmcgui.ListItem("Connect"),
+            listitem=xbmcgui.ListItem(plugin.localise(30203)),
             url=plugin.build_url(action='connect', device=device,
                                  address=address)
         )
         xbmcplugin.addDirectoryItem(
             handle=plugin.handle,
-            listitem=xbmcgui.ListItem("Disconnect"),
+            listitem=xbmcgui.ListItem(plugin.localise(30204)),
             url=plugin.build_url(action='disconnect', device=device,
                                  address=address)
         )
         xbmcplugin.addDirectoryItem(
             handle=plugin.handle,
-            listitem=xbmcgui.ListItem("Unpair"),
+            listitem=xbmcgui.ListItem(plugin.localise(30206)),
             url=plugin.build_url(action='unpair', device=device,
                                  address=address)
         )
         xbmcplugin.addDirectoryItem(
             handle=plugin.handle,
-            listitem=xbmcgui.ListItem("Trust"),
+            listitem=xbmcgui.ListItem(plugin.localise(30207)),
             url=plugin.build_url(action='trust', device=device,
                                  address=address)
         )
         xbmcplugin.addDirectoryItem(
             handle=plugin.handle,
-            listitem=xbmcgui.ListItem("Revoke trust"),
+            listitem=xbmcgui.ListItem(plugin.localise(30208)),
             url=plugin.build_url(action='untrust', device=device,
                                  address=address)
         )
         xbmcplugin.addDirectoryItem(
             handle=plugin.handle,
-            listitem=xbmcgui.ListItem("Information"),
+            listitem=xbmcgui.ListItem(plugin.localise(30209)),
             url=plugin.build_url(action='info', device=device,
                                  address=address)
         )
     elif paired == str(False):
         xbmcplugin.addDirectoryItem(
             handle=plugin.handle,
-            listitem=xbmcgui.ListItem("Pair"),
+            listitem=xbmcgui.ListItem(plugin.localise(30205)),
             url=plugin.build_url(action='pair', device=device, address=address)
         )
         xbmcplugin.addDirectoryItem(
             handle=plugin.handle,
-            listitem=xbmcgui.ListItem("Connect"),
+            listitem=xbmcgui.ListItem(plugin.localise(30203)),
             url=plugin.build_url(action='connect', device=device,
                                  address=address)
         )
         xbmcplugin.addDirectoryItem(
             handle=plugin.handle,
-            listitem=xbmcgui.ListItem("Information"),
+            listitem=xbmcgui.ListItem(plugin.localise(30209)),
             url=plugin.build_url(action='info', device=device,
                                  address=address)
         )

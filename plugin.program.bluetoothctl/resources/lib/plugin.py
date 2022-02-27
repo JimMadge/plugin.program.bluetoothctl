@@ -42,6 +42,10 @@ class Plugin:
         setting: str = self.addon.getSetting(setting_id)
         return setting
 
+    def localise(self, string_id: int) -> str:
+        string: str = self.addon.getLocalizedString(string_id)
+        return string
+
     def action(
         self, name: Optional[str] = None
     ) -> Callable[[F], F]:

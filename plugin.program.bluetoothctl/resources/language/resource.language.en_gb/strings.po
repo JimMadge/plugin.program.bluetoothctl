@@ -25,17 +25,55 @@ msgctxt "#30002"
 msgid "Manage bluetooth devices using bluetoothctl"
 msgstr ""
 
-# Addon settings 31xxx
-# Bluetoothctl settings 311xx
+# Addon settings 301xx
+# Bluetoothctl settings 301xx
 
-msgctxt "#31100"
+msgctxt "#30100"
 msgid "bluetoothctl settings"
 msgstr ""
 
-msgctxt "#31101"
+msgctxt "#30101"
 msgid "bluetoothctl path"
 msgstr ""
 
-msgctxt "#31102"
+msgctxt "#30102"
 msgid "bluetoothctl timeout"
+msgstr ""
+
+# Addon actions 302xx
+
+msgctxt "#30201"
+msgid "Paired devices"
+msgstr ""
+
+msgctxt "#30202"
+msgid "Available devices"
+msgstr ""
+
+msgctxt "#30203"
+msgid "Connect"
+msgstr ""
+
+msgctxt "#30204"
+msgid "Disconnect"
+msgstr ""
+
+msgctxt "#30205"
+msgid "Pair"
+msgstr ""
+
+msgctxt "#30206"
+msgid "Unpair"
+msgstr ""
+
+msgctxt "#30207"
+msgid "Trust"
+msgstr ""
+
+msgctxt "#30208"
+msgid "Revoke trust"
+msgstr ""
+
+msgctxt "#30209"
+msgid "Information"
 msgstr ""
