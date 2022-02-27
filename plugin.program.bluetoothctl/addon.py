@@ -84,6 +84,36 @@ def paired_devices(param: dict[str, str]) -> None:
     xbmcplugin.endOfDirectory(plugin.handle)
 
 
+def get_available_devices(bt: Bluetoothctl) -> dict[str, str]:
+    try:
+        devices = bt.get_devices()
+        logdebug('getting available devices succeeded.'
+                 f'\ndevices: {devices}')
+    except CalledProcessError as e:
+        logerror(f'listing available devices failed.\n'
+                 f'return code: {e.returncode}\n'
+                 f'stdout: {e.stdout}'
+                 f'stderr: e.stderr)')
+        devices = {}
+
+    return devices
+
+
+def get_paired_devices(bt: Bluetoothctl) -> dict[str, str]:
+    try:
+        devices = bt.get_paired_devices()
+        logdebug('getting paired devices succeeded.'
+                 f'\ndevices: {devices}')
+    except CalledProcessError as e:
+        logerror(f'listing paired devices failed.\n'
+                 f'return code: {e.returncode}\n'
+                 f'stdout: {e.stdout}'
+                 f'stderr: e.stderr)')
+        devices = {}
+
+    return devices
+
+
 @plugin.action()
 def device(params: dict[str, str]) -> None:
     device = params['device']
@@ -121,6 +151,12 @@ def device(params: dict[str, str]) -> None:
             url=plugin.build_url(action='untrust', device=device,
                                  address=address)
         )
+        xbmcplugin.addDirectoryItem(
+            handle=plugin.handle,
+            listitem=xbmcgui.ListItem("Information"),
+            url=plugin.build_url(action='info', device=device,
+                                 address=address)
+        )
     elif paired == str(False):
         xbmcplugin.addDirectoryItem(
             handle=plugin.handle,
@@ -131,6 +167,12 @@ def device(params: dict[str, str]) -> None:
             handle=plugin.handle,
             listitem=xbmcgui.ListItem("Connect"),
             url=plugin.build_url(action='connect', device=device,
+                                 address=address)
+        )
+        xbmcplugin.addDirectoryItem(
+            handle=plugin.handle,
+            listitem=xbmcgui.ListItem("Information"),
+            url=plugin.build_url(action='info', device=device,
                                  address=address)
         )
 
@@ -216,34 +258,24 @@ untrust = device_action_mode_factory(
 plugin.action('untrust')(untrust)
 
 
-def get_available_devices(bt: Bluetoothctl) -> dict[str, str]:
-    try:
-        devices = bt.get_devices()
-        logdebug('getting available devices succeeded.'
-                 f'\ndevices: {devices}')
-    except CalledProcessError as e:
-        logerror(f'listing available devices failed.\n'
-                 f'return code: {e.returncode}\n'
-                 f'stdout: {e.stdout}'
-                 f'stderr: e.stderr)')
-        devices = {}
+@plugin.action()
+def info(params: dict[str, str]) -> None:
+    device = params['device']
+    address = params['address']
 
-    return devices
+    process = bt.info(address)
+    if process.returncode != 0:
+        logerror(f'failed to get information for {device} {address}')
+        return
+    else:
+        loginfo(f'fetched information for {device} {address}')
 
-
-def get_paired_devices(bt: Bluetoothctl) -> dict[str, str]:
-    try:
-        devices = bt.get_paired_devices()
-        logdebug('getting paired devices succeeded.'
-                 f'\ndevices: {devices}')
-    except CalledProcessError as e:
-        logerror(f'listing paired devices failed.\n'
-                 f'return code: {e.returncode}\n'
-                 f'stdout: {e.stdout}'
-                 f'stderr: e.stderr)')
-        devices = {}
-
-    return devices
+    dialog = xbmcgui.Dialog()
+    dialog.textviewer(
+        heading=device,
+        text=process.stdout,
+        usemono=True
+    )
 
 
 if __name__ == "__main__":

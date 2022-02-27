@@ -12,8 +12,12 @@ class Bluetoothctl:
     }  # type: dict[str, Any]
 
     def __init__(self) -> None:
-        self.executable = '/usr/bin/bluetoothctl'
+        self._executable = '/usr/bin/bluetoothctl'
         self.scan_timeout = 5
+
+    @property
+    def executable(self) -> str:
+        return self._executable
 
     def scan(self) -> CompletedProcess[str]:
         """
@@ -121,4 +125,13 @@ class Bluetoothctl:
         Returns: A CompletedProcess instance
         """
         command = [self.executable, 'untrust', address]
+        return subprocess.run(command, **self._run_args)
+
+    def info(self, address: str) -> CompletedProcess[str]:
+        """
+        Get device information
+
+        Returns: A CompletedProcess instance
+        """
+        command = [self.executable, 'info', address]
         return subprocess.run(command, **self._run_args)
