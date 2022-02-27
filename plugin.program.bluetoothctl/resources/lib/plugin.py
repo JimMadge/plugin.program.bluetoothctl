@@ -17,7 +17,9 @@ class Plugin:
         self._base_url = sys.argv[0]
         self._handle = int(sys.argv[1])
         self._params = urllib.parse.parse_qs(sys.argv[2][1:])
+
         self._addon = xbmcaddon.Addon()
+
         self._actions: dict[str, Callable[[dict[str, str]], None]] = {}
 
     @property
@@ -31,6 +33,14 @@ class Plugin:
     @property
     def name(self) -> str:
         return str(self._addon.getAddonInfo('name'))
+
+    @property
+    def addon(self) -> xbmcaddon.Addon:
+        return self._addon
+
+    def get_setting(self, setting_id: str) -> str:
+        setting: str = self.addon.getSetting(setting_id)
+        return setting
 
     def action(
         self, name: Optional[str] = None

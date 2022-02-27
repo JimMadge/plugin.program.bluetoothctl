@@ -11,9 +11,10 @@ class Bluetoothctl:
         'encoding': 'utf8',
     }  # type: dict[str, Any]
 
-    def __init__(self) -> None:
-        self._executable = '/usr/bin/bluetoothctl'
-        self.scan_timeout = 5
+    def __init__(self, executable: str = '/usr/bin/bluetoothctl',
+                 scan_timeout: int = 5) -> None:
+        self._executable = executable
+        self.scan_timeout = scan_timeout
 
     @property
     def executable(self) -> str:

@@ -8,7 +8,13 @@ from resources.lib.busy_dialog import busy_dialog
 from resources.lib.logging import logerror, logdebug, loginfo
 
 plugin = Plugin()
-bt = Bluetoothctl()
+
+bluetoothctl_path = plugin.get_setting('bluetoothctl_path')
+logdebug(f'fetched bluetoothctl path {bluetoothctl_path}')
+bluetoothctl_timeout = int(plugin.get_setting('bluetoothctl_timeout'))
+logdebug(f'fetched bluetoothctl timeout {bluetoothctl_timeout}')
+bt = Bluetoothctl(executable=bluetoothctl_path,
+                  scan_timeout=bluetoothctl_timeout)
 
 
 @plugin.action()
