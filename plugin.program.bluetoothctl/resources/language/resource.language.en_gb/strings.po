@@ -1,0 +1,41 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-02-27 15:17+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: \n"
+"Language-Team: none\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en_gb\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+
+# Name, summary and description
+msgctxt "#30000"
+msgid "Bluetoothctl"
+msgstr ""
+
+msgctxt "#30001"
+msgid "Interface to bluetoothctl"
+msgstr ""
+
+msgctxt "#30002"
+msgid "Manage bluetooth devices using bluetoothctl"
+msgstr ""
+
+# Addon settings 31xxx
+# Bluetoothctl settings 311xx
+
+msgctxt "#31100"
+msgid "bluetoothctl settings"
+msgstr ""
+
+msgctxt "#31101"
+msgid "bluetoothctl path"
+msgstr ""
+
+msgctxt "#31102"
+msgid "bluetoothctl timeout"
+msgstr ""
