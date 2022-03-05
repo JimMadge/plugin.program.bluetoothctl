@@ -6,7 +6,7 @@ import xbmc  # type: ignore
 @contextmanager
 def busy_dialog() -> Generator[None, None, None]:
     """
-    Display a busy dialog box
+    Display a busy dialog box.
     """
     xbmc.executebuiltin('ActivateWindow(busydialognocancel)')
     try:
