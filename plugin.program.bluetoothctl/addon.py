@@ -20,6 +20,12 @@ bt = Bluetoothctl(executable=bluetoothctl_path,
 
 @plugin.action()
 def root(params: dict[str, str]) -> None:
+    """
+    The default (starting) action.
+
+    params: Dictionary of query string parameters passed to the plugin. Uses
+        none.
+    """
     xbmcplugin.addDirectoryItem(
         handle=plugin.handle,
         url=plugin.build_url(action='paired_devices'),
@@ -38,6 +44,12 @@ def root(params: dict[str, str]) -> None:
 
 @plugin.action()
 def available_devices(params: dict[str, str]) -> None:
+    """
+    Show available, unpaired devices.
+
+    params: Dictionary of query string parameters passed to the plugin. Uses
+        none.
+    """
     with busy_dialog():
         process = bt.scan()
 
@@ -49,12 +61,15 @@ def available_devices(params: dict[str, str]) -> None:
                    f'stdout: {process.stdout}'
                    f'stderr: process.stderr)')
 
-    # Remove paired devices from list
+    # Get available devices
     devices = get_available_devices(bt)
+
+    # Remove paired devices from list
     paired_devices = get_paired_devices(bt)
     for device in paired_devices.keys():
         devices.pop(device, None)
 
+    # Create a list of devices
     for device, address in devices.items():
         xbmcplugin.addDirectoryItem(
             handle=plugin.handle,
@@ -69,8 +84,15 @@ def available_devices(params: dict[str, str]) -> None:
 
 @plugin.action()
 def paired_devices(param: dict[str, str]) -> None:
+    """
+    Show paired devices.
+
+    params: Dictionary of query string parameters passed to the plugin. Uses
+        none.
+    """
     devices = get_paired_devices(bt)
 
+    # Create a list of devices
     for device, address in devices.items():
         xbmcplugin.addDirectoryItem(
             handle=plugin.handle,
@@ -84,6 +106,9 @@ def paired_devices(param: dict[str, str]) -> None:
 
 
 def get_available_devices(bt: Bluetoothctl) -> dict[str, str]:
+    """
+    Create a dictionary of device name: device address for available devices.
+    """
     try:
         devices = bt.get_devices()
         plugin.log(LOGDEBUG, 'getting available devices succeeded.'
@@ -99,6 +124,9 @@ def get_available_devices(bt: Bluetoothctl) -> dict[str, str]:
 
 
 def get_paired_devices(bt: Bluetoothctl) -> dict[str, str]:
+    """
+    Create a dictionary of device name: device address for paired devices.
+    """
     try:
         devices = bt.get_paired_devices()
         plugin.log(LOGDEBUG, 'getting paired devices succeeded.'
@@ -115,11 +143,20 @@ def get_paired_devices(bt: Bluetoothctl) -> dict[str, str]:
 
 @plugin.action()
 def device(params: dict[str, str]) -> None:
+    """
+    Device view. Presents a list of actions to take which depend on whether the
+    device is paired or not.
+
+    params: Dictionary of query string parameters passed to the plugin. Expects
+        'device', 'address' and 'paired'.
+    """
+    # Unpack parameters
     device = params['device']
     address = params['address']
     paired = params['paired']
 
     if paired == str(True):
+        # List actions for paired devices
         xbmcplugin.addDirectoryItem(
             handle=plugin.handle,
             listitem=plugin.list_item(plugin.localise(30203)),
@@ -153,10 +190,10 @@ def device(params: dict[str, str]) -> None:
         xbmcplugin.addDirectoryItem(
             handle=plugin.handle,
             listitem=plugin.list_item(plugin.localise(30209)),
-            url=plugin.build_url(action='info', device=device,
-                                 address=address)
+            url=plugin.build_url(action='info', device=device, address=address)
         )
     elif paired == str(False):
+        # List actions for unpaired devices
         xbmcplugin.addDirectoryItem(
             handle=plugin.handle,
             listitem=plugin.list_item(plugin.localise(30205)),
@@ -171,18 +208,25 @@ def device(params: dict[str, str]) -> None:
         xbmcplugin.addDirectoryItem(
             handle=plugin.handle,
             listitem=plugin.list_item(plugin.localise(30209)),
-            url=plugin.build_url(action='info', device=device,
-                                 address=address)
+            url=plugin.build_url(action='info', device=device, address=address)
         )
 
     xbmcplugin.endOfDirectory(plugin.handle)
 
 
+# Type signature for device action functions
 DeviceAction = Callable[[dict[str, str]], CompletedProcess[str]]
 
 
 def device_action(infinitive: str,
                   present: str) -> Callable[[DeviceAction], Action]:
+    """
+    Decorator factory for actions which only call a bluetoothctl function on a
+    device.
+
+    infinitive: infinitive of the action, e.g. pair, connect
+    present: Present tense of the action, e.g. pairing, connecting
+    """
     def decorator(func: DeviceAction) -> Action:
         nonlocal infinitive
         nonlocal present
@@ -224,6 +268,12 @@ def device_action(infinitive: str,
 @plugin.action()
 @device_action(infinitive='connect', present='connecting')
 def connect(params: dict[str, str]) -> CompletedProcess[str]:
+    """
+    Connect to a device.
+
+    params: Dictionary of query string parameters passed to the plugin. Uses
+        'address'.
+    """
     address = params['address']
 
     with busy_dialog():
@@ -235,6 +285,12 @@ def connect(params: dict[str, str]) -> CompletedProcess[str]:
 @plugin.action()
 @device_action(infinitive='disconnect', present='disconnecting')
 def disconnect(params: dict[str, str]) -> CompletedProcess[str]:
+    """
+    Disconnect from a device.
+
+    params: Dictionary of query string parameters passed to the plugin. Uses
+        'address'.
+    """
     address = params['address']
 
     with busy_dialog():
@@ -246,6 +302,12 @@ def disconnect(params: dict[str, str]) -> CompletedProcess[str]:
 @plugin.action()
 @device_action(infinitive='pair', present='pairing')
 def pair(params: dict[str, str]) -> CompletedProcess[str]:
+    """
+    Pair with a device.
+
+    params: Dictionary of query string parameters passed to the plugin. Uses
+        'address'.
+    """
     address = params['address']
 
     with busy_dialog():
@@ -257,6 +319,12 @@ def pair(params: dict[str, str]) -> CompletedProcess[str]:
 @plugin.action()
 @device_action(infinitive='remove', present='removing')
 def remove(params: dict[str, str]) -> CompletedProcess[str]:
+    """
+    Remove (unpair) a device.
+
+    params: Dictionary of query string parameters passed to the plugin. Uses
+        'address'.
+    """
     address = params['address']
 
     with busy_dialog():
@@ -268,6 +336,12 @@ def remove(params: dict[str, str]) -> CompletedProcess[str]:
 @plugin.action()
 @device_action(infinitive='trust', present='trusting')
 def trust(params: dict[str, str]) -> CompletedProcess[str]:
+    """
+    Trust a device.
+
+    params: Dictionary of query string parameters passed to the plugin. Uses
+        'address'.
+    """
     address = params['address']
 
     with busy_dialog():
@@ -279,6 +353,12 @@ def trust(params: dict[str, str]) -> CompletedProcess[str]:
 @plugin.action()
 @device_action(infinitive='revoke trust', present='revoking trust')
 def untrust(params: dict[str, str]) -> CompletedProcess[str]:
+    """
+    Revoke trust in a device.
+
+    params: Dictionary of query string parameters passed to the plugin. Uses
+        'address'.
+    """
     address = params['address']
 
     with busy_dialog():
@@ -289,6 +369,12 @@ def untrust(params: dict[str, str]) -> CompletedProcess[str]:
 
 @plugin.action()
 def info(params: dict[str, str]) -> None:
+    """
+    Show information about a device.
+
+    params: Dictionary of query string parameters passed to the plugin. Uses
+        'device', 'address'.
+    """
     device = params['device']
     address = params['address']
 
@@ -307,9 +393,12 @@ def info(params: dict[str, str]) -> None:
     else:
         plugin.log(LOGDEBUG, f'fetched information for {device} {address}')
 
+    # Remove tabs from output as they do not render well in the textviewer
+    text = process.stdout.replace('\t', '  ')
+
     dialog.textviewer(
         heading=device,
-        text=process.stdout,
+        text=text,
         usemono=True
     )
 
