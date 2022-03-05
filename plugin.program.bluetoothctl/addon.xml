@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.program.bluetoothctl" name="Bluetoothctl" version="0.9.0" provider-name="jimmadge">
+<addon id="plugin.program.bluetoothctl" name="Bluetoothctl" version="0.9.0" provider-name="JimMadge">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
         <import addon="xbmc.addon" version="18.9.701"/>
