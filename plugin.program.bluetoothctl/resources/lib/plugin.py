@@ -1,8 +1,9 @@
 import sys
 from typing import Any, Callable, Optional
 import urllib.parse
-import xbmc
+import xbmc  # type: ignore
 import xbmcaddon  # type: ignore
+import xbmcgui  # type: ignore
 
 
 class PluginException(Exception):
@@ -44,6 +45,11 @@ class Plugin:
     def name(self) -> str:
         name: str = self.addon.getAddonInfo('name')
         return name
+
+    @property
+    def icon(self) -> str:
+        icon: str = self.addon.getAddonInfo('icon')
+        return icon
 
     def get_setting(self, setting_id: str) -> str:
         setting: str = self.addon.getSetting(setting_id)
@@ -88,3 +94,11 @@ class Plugin:
         action = self.params.get('action', 'root')
 
         self._actions[action](self.params)
+
+    def list_item(self, label: Optional[str] = None,
+                  label2: Optional[str] = None,
+                  path: Optional[str] = None) -> xbmcgui.ListItem:
+        list_item = xbmcgui.ListItem(label, label2, path)
+        list_item.setArt({'icon': self.icon})
+
+        return list_item

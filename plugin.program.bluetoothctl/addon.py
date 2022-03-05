@@ -22,13 +22,13 @@ def root(params: dict[str, str]) -> None:
     xbmcplugin.addDirectoryItem(
         handle=plugin.handle,
         url=plugin.build_url(action='paired_devices'),
-        listitem=xbmcgui.ListItem(plugin.localise(30201)),
+        listitem=plugin.list_item(plugin.localise(30201)),
         isFolder=True
     )
     xbmcplugin.addDirectoryItem(
         handle=plugin.handle,
         url=plugin.build_url(action='available_devices'),
-        listitem=xbmcgui.ListItem(plugin.localise(30202)),
+        listitem=plugin.list_item(plugin.localise(30202)),
         isFolder=True
     )
 
@@ -57,7 +57,7 @@ def available_devices(params: dict[str, str]) -> None:
     for device, address in devices.items():
         plugin.log(LOGDEBUG, f'listing device {device}')
 
-        li = xbmcgui.ListItem(device)
+        li = plugin.list_item(device)
         # li.addContextMenuItems([
         # ])
         xbmcplugin.addDirectoryItem(
@@ -77,7 +77,7 @@ def paired_devices(param: dict[str, str]) -> None:
 
     for device, address in devices.items():
         plugin.log(LOGDEBUG, f'listing device {device}')
-        li = xbmcgui.ListItem(device)
+        li = plugin.list_item(device)
         # li.addContextMenuItems([
         # ])
         xbmcplugin.addDirectoryItem(
@@ -130,55 +130,55 @@ def device(params: dict[str, str]) -> None:
     if paired == str(True):
         xbmcplugin.addDirectoryItem(
             handle=plugin.handle,
-            listitem=xbmcgui.ListItem(plugin.localise(30203)),
+            listitem=plugin.list_item(plugin.localise(30203)),
             url=plugin.build_url(action='connect', device=device,
                                  address=address)
         )
         xbmcplugin.addDirectoryItem(
             handle=plugin.handle,
-            listitem=xbmcgui.ListItem(plugin.localise(30204)),
+            listitem=plugin.list_item(plugin.localise(30204)),
             url=plugin.build_url(action='disconnect', device=device,
                                  address=address)
         )
         xbmcplugin.addDirectoryItem(
             handle=plugin.handle,
-            listitem=xbmcgui.ListItem(plugin.localise(30206)),
+            listitem=plugin.list_item(plugin.localise(30206)),
             url=plugin.build_url(action='unpair', device=device,
                                  address=address)
         )
         xbmcplugin.addDirectoryItem(
             handle=plugin.handle,
-            listitem=xbmcgui.ListItem(plugin.localise(30207)),
+            listitem=plugin.list_item(plugin.localise(30207)),
             url=plugin.build_url(action='trust', device=device,
                                  address=address)
         )
         xbmcplugin.addDirectoryItem(
             handle=plugin.handle,
-            listitem=xbmcgui.ListItem(plugin.localise(30208)),
+            listitem=plugin.list_item(plugin.localise(30208)),
             url=plugin.build_url(action='untrust', device=device,
                                  address=address)
         )
         xbmcplugin.addDirectoryItem(
             handle=plugin.handle,
-            listitem=xbmcgui.ListItem(plugin.localise(30209)),
+            listitem=plugin.list_item(plugin.localise(30209)),
             url=plugin.build_url(action='info', device=device,
                                  address=address)
         )
     elif paired == str(False):
         xbmcplugin.addDirectoryItem(
             handle=plugin.handle,
-            listitem=xbmcgui.ListItem(plugin.localise(30205)),
+            listitem=plugin.list_item(plugin.localise(30205)),
             url=plugin.build_url(action='pair', device=device, address=address)
         )
         xbmcplugin.addDirectoryItem(
             handle=plugin.handle,
-            listitem=xbmcgui.ListItem(plugin.localise(30203)),
+            listitem=plugin.list_item(plugin.localise(30203)),
             url=plugin.build_url(action='connect', device=device,
                                  address=address)
         )
         xbmcplugin.addDirectoryItem(
             handle=plugin.handle,
-            listitem=xbmcgui.ListItem(plugin.localise(30209)),
+            listitem=plugin.list_item(plugin.localise(30209)),
             url=plugin.build_url(action='info', device=device,
                                  address=address)
         )
