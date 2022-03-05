@@ -3,7 +3,7 @@ from subprocess import CalledProcessError, CompletedProcess
 from typing import Callable
 import xbmcgui  # type: ignore
 import xbmcplugin  # type: ignore
-from resources.lib.plugin import Plugin, Action, LOGERROR, LOGDEBUG, LOGINFO
+from resources.lib.plugin import Plugin, Action, LOGERROR, LOGDEBUG
 from resources.lib.bluetoothctl import Bluetoothctl
 from resources.lib.busy_dialog import busy_dialog
 
@@ -204,12 +204,12 @@ def device_action(infinitive: str,
 
             dialog = xbmcgui.Dialog()
 
-            plugin.log(LOGINFO,
+            plugin.log(LOGDEBUG,
                        f'attempting to {infinitive}: {device} {address}')
             process = func(params)
 
             if process.returncode == 0:
-                plugin.log(LOGINFO, f'{present} successful')
+                plugin.log(LOGDEBUG, f'{present} successful')
                 dialog.notification(
                     heading=plugin.name,
                     message=f'{present} successful',
@@ -313,7 +313,7 @@ def info(params: dict[str, str]) -> None:
         )
         return
     else:
-        plugin.log(LOGINFO, f'fetched information for {device} {address}')
+        plugin.log(LOGDEBUG, f'fetched information for {device} {address}')
 
     dialog.textviewer(
         heading=device,
