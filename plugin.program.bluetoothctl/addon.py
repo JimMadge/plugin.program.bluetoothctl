@@ -13,6 +13,7 @@ bluetoothctl_path = plugin.get_setting('bluetoothctl_path')
 plugin.log(LOGDEBUG, f'fetched bluetoothctl path {bluetoothctl_path}')
 bluetoothctl_timeout = int(plugin.get_setting('bluetoothctl_timeout'))
 plugin.log(LOGDEBUG, f'fetched bluetoothctl timeout {bluetoothctl_timeout}')
+
 bt = Bluetoothctl(executable=bluetoothctl_path,
                   scan_timeout=bluetoothctl_timeout)
 
@@ -55,16 +56,11 @@ def available_devices(params: dict[str, str]) -> None:
         devices.pop(device, None)
 
     for device, address in devices.items():
-        plugin.log(LOGDEBUG, f'listing device {device}')
-
-        li = plugin.list_item(device)
-        # li.addContextMenuItems([
-        # ])
         xbmcplugin.addDirectoryItem(
             handle=plugin.handle,
             url=plugin.build_url(action='device', device=device,
                                  address=address, paired=False),
-            listitem=li,
+            listitem=plugin.list_item(device),
             isFolder=True
         )
 
@@ -76,15 +72,11 @@ def paired_devices(param: dict[str, str]) -> None:
     devices = get_paired_devices(bt)
 
     for device, address in devices.items():
-        plugin.log(LOGDEBUG, f'listing device {device}')
-        li = plugin.list_item(device)
-        # li.addContextMenuItems([
-        # ])
         xbmcplugin.addDirectoryItem(
             handle=plugin.handle,
             url=plugin.build_url(action='device', device=device,
                                  address=address, paired=True),
-            listitem=li,
+            listitem=plugin.list_item(device),
             isFolder=True
         )
 
