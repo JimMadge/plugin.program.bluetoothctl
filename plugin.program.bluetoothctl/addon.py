@@ -3,17 +3,16 @@ from subprocess import CalledProcessError, CompletedProcess
 from typing import Callable
 import xbmcgui  # type: ignore
 import xbmcplugin  # type: ignore
-from resources.lib.plugin import Plugin, Action
+from resources.lib.plugin import Plugin, Action, LOGERROR, LOGDEBUG, LOGINFO
 from resources.lib.bluetoothctl import Bluetoothctl
 from resources.lib.busy_dialog import busy_dialog
-from resources.lib.logging import logerror, logdebug, loginfo
 
 plugin = Plugin()
 
 bluetoothctl_path = plugin.get_setting('bluetoothctl_path')
-logdebug(f'fetched bluetoothctl path {bluetoothctl_path}')
+plugin.log(LOGDEBUG, f'fetched bluetoothctl path {bluetoothctl_path}')
 bluetoothctl_timeout = int(plugin.get_setting('bluetoothctl_timeout'))
-logdebug(f'fetched bluetoothctl timeout {bluetoothctl_timeout}')
+plugin.log(LOGDEBUG, f'fetched bluetoothctl timeout {bluetoothctl_timeout}')
 bt = Bluetoothctl(executable=bluetoothctl_path,
                   scan_timeout=bluetoothctl_timeout)
 
@@ -42,11 +41,12 @@ def available_devices(params: dict[str, str]) -> None:
         process = bt.scan()
 
     if process.returncode == 0:
-        logdebug(f'scanning succeeded.\nstdout: {process.stdout}')
+        plugin.log(LOGDEBUG, f'scanning succeeded.\nstdout: {process.stdout}')
     else:
-        logerror(f'scanning failed.\nreturn code: {process.returncode}\n'
-                 f'stdout: {process.stdout}'
-                 f'stderr: process.stderr)')
+        plugin.log(LOGERROR,
+                   f'scanning failed.\nreturn code: {process.returncode}\n'
+                   f'stdout: {process.stdout}'
+                   f'stderr: process.stderr)')
 
     # Remove paired devices from list
     devices = get_available_devices(bt)
@@ -55,7 +55,7 @@ def available_devices(params: dict[str, str]) -> None:
         devices.pop(device, None)
 
     for device, address in devices.items():
-        logdebug(f'listing device {device}')
+        plugin.log(LOGDEBUG, f'listing device {device}')
 
         li = xbmcgui.ListItem(device)
         # li.addContextMenuItems([
@@ -76,7 +76,7 @@ def paired_devices(param: dict[str, str]) -> None:
     devices = get_paired_devices(bt)
 
     for device, address in devices.items():
-        logdebug(f'listing device {device}')
+        plugin.log(LOGDEBUG, f'listing device {device}')
         li = xbmcgui.ListItem(device)
         # li.addContextMenuItems([
         # ])
@@ -94,13 +94,13 @@ def paired_devices(param: dict[str, str]) -> None:
 def get_available_devices(bt: Bluetoothctl) -> dict[str, str]:
     try:
         devices = bt.get_devices()
-        logdebug('getting available devices succeeded.'
-                 f'\ndevices: {devices}')
+        plugin.log(LOGDEBUG, 'getting available devices succeeded.'
+                   f'\ndevices: {devices}')
     except CalledProcessError as e:
-        logerror(f'listing available devices failed.\n'
-                 f'return code: {e.returncode}\n'
-                 f'stdout: {e.stdout}'
-                 f'stderr: {e.stderr})')
+        plugin.log(LOGERROR, f'listing available devices failed.\n'
+                   f'return code: {e.returncode}\n'
+                   f'stdout: {e.stdout}'
+                   f'stderr: {e.stderr})')
         devices = {}
 
     return devices
@@ -109,13 +109,13 @@ def get_available_devices(bt: Bluetoothctl) -> dict[str, str]:
 def get_paired_devices(bt: Bluetoothctl) -> dict[str, str]:
     try:
         devices = bt.get_paired_devices()
-        logdebug('getting paired devices succeeded.'
-                 f'\ndevices: {devices}')
+        plugin.log(LOGDEBUG, 'getting paired devices succeeded.'
+                   f'\ndevices: {devices}')
     except CalledProcessError as e:
-        logerror(f'listing paired devices failed.\n'
-                 f'return code: {e.returncode}\n'
-                 f'stdout: {e.stdout}'
-                 f'stderr: {e.stderr})')
+        plugin.log(LOGERROR, f'listing paired devices failed.\n'
+                   f'return code: {e.returncode}\n'
+                   f'stdout: {e.stdout}'
+                   f'stderr: {e.stderr})')
         devices = {}
 
     return devices
@@ -204,21 +204,22 @@ def device_action(infinitive: str,
 
             dialog = xbmcgui.Dialog()
 
-            loginfo(f'attempting to {infinitive}: {device} {address}')
+            plugin.log(LOGINFO,
+                       f'attempting to {infinitive}: {device} {address}')
             process = func(params)
 
             if process.returncode == 0:
-                loginfo(f'{present} successful')
+                plugin.log(LOGINFO, f'{present} successful')
                 dialog.notification(
                     heading=plugin.name,
                     message=f'{present} successful',
                     icon=xbmcgui.NOTIFICATION_INFO
                 )
             else:
-                logerror(f'{present} failed.\n'
-                         f'return code: {process.returncode}\n'
-                         f'stdout: {process.stdout}\n'
-                         f'stderr: process.stderr)')
+                plugin.log(LOGERROR, f'{present} failed.\n'
+                           f'return code: {process.returncode}\n'
+                           f'stdout: {process.stdout}\n'
+                           f'stderr: process.stderr)')
                 dialog.notification(
                     heading=plugin.name,
                     message=f'{present} failed',
@@ -301,10 +302,11 @@ def info(params: dict[str, str]) -> None:
 
     process = bt.info(address)
     if process.returncode != 0:
-        logerror(f'failed to get information for {device} {address}')
+        plugin.log(LOGERROR,
+                   f'failed to get information for {device} {address}')
         return
     else:
-        loginfo(f'fetched information for {device} {address}')
+        plugin.log(LOGINFO, f'fetched information for {device} {address}')
 
     dialog = xbmcgui.Dialog()
     dialog.textviewer(

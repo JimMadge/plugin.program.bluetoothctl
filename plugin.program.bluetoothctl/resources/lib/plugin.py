@@ -1,8 +1,8 @@
 import sys
 from typing import Any, Callable, Optional
 import urllib.parse
+import xbmc
 import xbmcaddon  # type: ignore
-from .logging import logdebug
 
 
 class PluginException(Exception):
@@ -10,6 +10,12 @@ class PluginException(Exception):
 
 
 Action = Callable[[dict[str, str]], None]
+
+LOGDEBUG = xbmc.LOGDEBUG
+LOGINFO = xbmc.LOGINFO
+LOGWARNING = xbmc.LOGWARNING
+LOGERROR = xbmc.LOGERROR
+LOGFATAL = xbmc.LOGFATAL
 
 
 class Plugin:
@@ -31,12 +37,13 @@ class Plugin:
         return {key: value[0] for key, value in self._params.items()}
 
     @property
-    def name(self) -> str:
-        return str(self._addon.getAddonInfo('name'))
-
-    @property
     def addon(self) -> xbmcaddon.Addon:
         return self._addon
+
+    @property
+    def name(self) -> str:
+        name: str = self.addon.getAddonInfo('name')
+        return name
 
     def get_setting(self, setting_id: str) -> str:
         setting: str = self.addon.getSetting(setting_id)
@@ -45,6 +52,10 @@ class Plugin:
     def localise(self, string_id: int) -> str:
         string: str = self.addon.getLocalizedString(string_id)
         return string
+
+    def log(self, level: int, message: str) -> None:
+        assert level in [LOGDEBUG, LOGINFO, LOGWARNING, LOGERROR, LOGFATAL]
+        xbmc.log(f'{self.name}: {message}', level)
 
     def action(self, name: Optional[str] = None) -> Callable[[Action], Action]:
         def inner(func: Action) -> Action:
@@ -57,7 +68,7 @@ class Plugin:
             if name in self._actions.keys():
                 raise PluginException(f'action {name} already registered')
 
-            logdebug(f'registering action: {name}')
+            self.log(LOGDEBUG, f'registering action: {name}')
             self._actions[name] = func
 
             return func
@@ -72,8 +83,8 @@ class Plugin:
         return url
 
     def run(self) -> None:
-        logdebug(f'entering with parameters {self.params}')
-        logdebug(f'actions registered: {self._actions.keys()}')
+        self.log(LOGDEBUG, f'entering with parameters {self.params}')
+        self.log(LOGDEBUG, f'actions registered: {self._actions.keys()}')
         action = self.params.get('action', 'root')
 
         self._actions[action](self.params)
