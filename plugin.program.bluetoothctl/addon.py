@@ -300,15 +300,21 @@ def info(params: dict[str, str]) -> None:
     device = params['device']
     address = params['address']
 
+    dialog = xbmcgui.Dialog()
+
     process = bt.info(address)
     if process.returncode != 0:
         plugin.log(LOGERROR,
                    f'failed to get information for {device} {address}')
+        dialog.notification(
+            heading=plugin.name,
+            message='failed to get information',
+            icon=xbmcgui.NOTIFICATION_ERROR
+        )
         return
     else:
         plugin.log(LOGINFO, f'fetched information for {device} {address}')
 
-    dialog = xbmcgui.Dialog()
     dialog.textviewer(
         heading=device,
         text=process.stdout,
