@@ -100,7 +100,7 @@ def get_available_devices(bt: Bluetoothctl) -> dict[str, str]:
         logerror(f'listing available devices failed.\n'
                  f'return code: {e.returncode}\n'
                  f'stdout: {e.stdout}'
-                 f'stderr: e.stderr)')
+                 f'stderr: {e.stderr})')
         devices = {}
 
     return devices
@@ -115,7 +115,7 @@ def get_paired_devices(bt: Bluetoothctl) -> dict[str, str]:
         logerror(f'listing paired devices failed.\n'
                  f'return code: {e.returncode}\n'
                  f'stdout: {e.stdout}'
-                 f'stderr: e.stderr)')
+                 f'stderr: {e.stderr})')
         devices = {}
 
     return devices
