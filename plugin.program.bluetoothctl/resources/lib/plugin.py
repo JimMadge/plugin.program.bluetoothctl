@@ -1,5 +1,5 @@
 import sys
-from typing import Any, Callable, Optional, TypeVar
+from typing import Any, Callable, Optional
 import urllib.parse
 import xbmcaddon  # type: ignore
 from .logging import logdebug
@@ -9,7 +9,7 @@ class PluginException(Exception):
     pass
 
 
-F = TypeVar('F', bound=Callable[[dict[str, str]], None])
+Action = Callable[[dict[str, str]], None]
 
 
 class Plugin:
@@ -46,12 +46,8 @@ class Plugin:
         string: str = self.addon.getLocalizedString(string_id)
         return string
 
-    def action(
-        self, name: Optional[str] = None
-    ) -> Callable[[F], F]:
-        logdebug(f'name: {name}')
-
-        def inner(func: F) -> F:
+    def action(self, name: Optional[str] = None) -> Callable[[Action], Action]:
+        def inner(func: Action) -> Action:
             nonlocal name
             if not callable(func):
                 raise PluginException(f'{func} is not callable')

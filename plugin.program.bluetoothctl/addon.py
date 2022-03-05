@@ -1,8 +1,9 @@
+from functools import wraps
 from subprocess import CalledProcessError, CompletedProcess
 from typing import Callable
 import xbmcgui  # type: ignore
 import xbmcplugin  # type: ignore
-from resources.lib.plugin import Plugin
+from resources.lib.plugin import Plugin, Action
 from resources.lib.bluetoothctl import Bluetoothctl
 from resources.lib.busy_dialog import busy_dialog
 from resources.lib.logging import logerror, logdebug, loginfo
@@ -185,83 +186,112 @@ def device(params: dict[str, str]) -> None:
     xbmcplugin.endOfDirectory(plugin.handle)
 
 
-def device_action_mode_factory(
-    infinitive: str, present: str,
-    bt_method: Callable[[str], CompletedProcess[str]], addon_name: str
-) -> Callable[[dict[str, str]], None]:
-    """
-    Create a 'mode function' for running a bluetoothctl action on a device e.g.
-    connecting, pairing. This function handles running the method as well as
-    logging and errors.
-
-    Args:
-        infinitive: Infinitive verb e.g. 'trust', 'pair'.
-        present: Present tense verb e.g. 'trusting', 'pairing'.
-        bt_method: Method of `Bluetoothctl` object to call. It is expected that
-            the method takes the device address as the only argument.
-        addon_name: Name of the addon.
-    """
-
-    def func(params: dict[str, str]) -> None:
-        device = params['device']
-        address = params['address']
-
-        dialog = xbmcgui.Dialog()
-
-        loginfo(f'attempting to {infinitive}: {device} {address}')
-        with busy_dialog():
-            process = bt_method(address)
-
-        if process.returncode == 0:
-            loginfo(f'{present} successful')
-            dialog.notification(
-                heading=addon_name,
-                message=f'{present} successful',
-                icon=xbmcgui.NOTIFICATION_INFO
-            )
-        else:
-            logerror(f'{present} failed.\n'
-                     f'return code: {process.returncode}\n'
-                     f'stdout: {process.stdout}\n'
-                     f'stderr: process.stderr)')
-            dialog.notification(
-                heading=addon_name,
-                message=f'{present} failed',
-                icon=xbmcgui.NOTIFICATION_ERROR
-            )
-
-    return func
+DeviceAction = Callable[[dict[str, str]], CompletedProcess[str]]
 
 
-connect = device_action_mode_factory(
-    'connect', 'connecting', bt.connect, plugin.name
-)
-plugin.action('connect')(connect)
+def device_action(infinitive: str,
+                  present: str) -> Callable[[DeviceAction], Action]:
+    def decorator(func: DeviceAction) -> Action:
+        nonlocal infinitive
+        nonlocal present
 
-disconnect = device_action_mode_factory(
-    'disconnect', 'disconnecting', bt.disconnect, plugin.name
-)
-plugin.action('disconnect')(disconnect)
+        @wraps(func)
+        def wrapper(params: dict[str, str]) -> None:
+            nonlocal infinitive
+            nonlocal present
 
-pair = device_action_mode_factory(
-    'pair', 'pairing', bt.pair, plugin.name
-)
-plugin.action('pair')(pair)
+            address = params['address']
 
-remove = device_action_mode_factory(
-    'remove', 'removing', bt.remove, plugin.name
-)
-plugin.action('remove')(remove)
+            dialog = xbmcgui.Dialog()
 
-trust = device_action_mode_factory(
-    'trust', 'trusting', bt.trust, plugin.name
-)
-plugin.action('trust')(trust)
+            loginfo(f'attempting to {infinitive}: {device} {address}')
+            process = func(params)
 
-untrust = device_action_mode_factory(
-    'revoke trust', 'revoking trust', bt.trust, plugin.name
-)
-plugin.action('untrust')(untrust)
+            if process.returncode == 0:
+                loginfo(f'{present} successful')
+                dialog.notification(
+                    heading=plugin.name,
+                    message=f'{present} successful',
+                    icon=xbmcgui.NOTIFICATION_INFO
+                )
+            else:
+                logerror(f'{present} failed.\n'
+                         f'return code: {process.returncode}\n'
+                         f'stdout: {process.stdout}\n'
+                         f'stderr: process.stderr)')
+                dialog.notification(
+                    heading=plugin.name,
+                    message=f'{present} failed',
+                    icon=xbmcgui.NOTIFICATION_ERROR
+                )
+        return wrapper
+    return decorator
+
+
+@plugin.action()
+@device_action(infinitive='connect', present='connecting')
+def connect(params: dict[str, str]) -> CompletedProcess[str]:
+    address = params['address']
+
+    with busy_dialog():
+        process = bt.connect(address)
+
+    return process
+
+
+@plugin.action()
+@device_action(infinitive='disconnect', present='disconnecting')
+def disconnect(params: dict[str, str]) -> CompletedProcess[str]:
+    address = params['address']
+
+    with busy_dialog():
+        process = bt.disconnect(address)
+
+    return process
+
+
+@plugin.action()
+@device_action(infinitive='pair', present='pairing')
+def pair(params: dict[str, str]) -> CompletedProcess[str]:
+    address = params['address']
+
+    with busy_dialog():
+        process = bt.pair(address)
+
+    return process
+
+
+@plugin.action()
+@device_action(infinitive='remove', present='removing')
+def remove(params: dict[str, str]) -> CompletedProcess[str]:
+    address = params['address']
+
+    with busy_dialog():
+        process = bt.remove(address)
+
+    return process
+
+
+@plugin.action()
+@device_action(infinitive='trust', present='trusting')
+def trust(params: dict[str, str]) -> CompletedProcess[str]:
+    address = params['address']
+
+    with busy_dialog():
+        process = bt.trust(address)
+
+    return process
+
+
+@plugin.action()
+@device_action(infinitive='revoke trust', present='revoking trust')
+def untrust(params: dict[str, str]) -> CompletedProcess[str]:
+    address = params['address']
+
+    with busy_dialog():
+        process = bt.trust(address)
+
+    return process
 
 
 @plugin.action()
