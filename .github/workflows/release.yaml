@@ -14,6 +14,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Install license
+        run: cp LICENSE plugin.program.bluetoothctl/LICENSE.txt
+
       - name: Create archive
         run: zip -r plugin.program.bluetoothctl.zip plugin.program.bluetoothctl
 
