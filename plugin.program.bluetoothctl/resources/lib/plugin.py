@@ -23,6 +23,11 @@ LOGWARNING = xbmc.LOGWARNING
 LOGERROR = xbmc.LOGERROR
 LOGFATAL = xbmc.LOGFATAL
 
+# Define icons
+NOTIFICATION_INFO = xbmcgui.NOTIFICATION_INFO
+NOTIFICATION_WARNING = xbmcgui.NOTIFICATION_WARNING
+NOTIFICATION_ERROR = xbmcgui.NOTIFICATION_ERROR
+
 
 class Plugin:
     """
@@ -39,6 +44,9 @@ class Plugin:
 
         # Get Addon instance
         self._addon = xbmcaddon.Addon()
+
+        # Get Dialog instance
+        self._dialog = xbmcgui.Dialog()
 
         # Initialise actions dictionary
         self._actions: dict[str, Callable[[dict[str, str]], None]] = {}
@@ -65,6 +73,13 @@ class Plugin:
         Return Addon instance.
         """
         return self._addon
+
+    @property
+    def dialog(self) -> xbmcgui.Dialog:
+        """
+        Return Dialog instance
+        """
+        return self._dialog
 
     @property
     def name(self) -> str:
@@ -109,6 +124,17 @@ class Plugin:
         """
         assert level in [LOGDEBUG, LOGINFO, LOGWARNING, LOGERROR, LOGFATAL]
         xbmc.log(f'{self.name}: {message}', level)
+
+    def notification(self, message: str,
+                     icon: str = NOTIFICATION_INFO) -> None:
+        """
+        Create a Kodi notification.
+
+        message: Message to display
+        icon: Notification icon, one of [NOTIFICATION_INFO,
+            NOTIFICATION_WARNING, NOTIFICATION_ERROR]
+        """
+        self.dialog.notification(heading=self.name, message=message, icon=icon)
 
     def action(self, name: Optional[str] = None) -> Callable[[Action], Action]:
         """

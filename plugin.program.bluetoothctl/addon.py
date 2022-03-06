@@ -1,9 +1,9 @@
 from functools import wraps
 from subprocess import CompletedProcess
 from typing import Any, Callable
-import xbmcgui  # type: ignore
 import xbmcplugin  # type: ignore
 from resources.lib.plugin import Plugin, Action, LOGDEBUG
+from resources.lib.plugin import NOTIFICATION_INFO, NOTIFICATION_ERROR
 from resources.lib.bluetoothctl import Bluetoothctl
 from resources.lib.busy_dialog import busy_dialog
 
@@ -239,24 +239,14 @@ def device_action(infinitive: str,
             nonlocal infinitive
             nonlocal present
 
-            dialog = xbmcgui.Dialog()
-
             process = func(params)
 
             log_completed_process(process)
 
             if process.returncode == 0:
-                dialog.notification(
-                    heading=plugin.name,
-                    message=f'{present} successful',
-                    icon=xbmcgui.NOTIFICATION_INFO
-                )
+                plugin.notification(f'{present} successful', NOTIFICATION_INFO)
             else:
-                dialog.notification(
-                    heading=plugin.name,
-                    message=f'{present} failed',
-                    icon=xbmcgui.NOTIFICATION_ERROR
-                )
+                plugin.notification(f'{present} failed', NOTIFICATION_ERROR)
         return wrapper
     return decorator
 
@@ -374,24 +364,18 @@ def info(params: dict[str, str]) -> None:
     device = params['device']
     address = params['address']
 
-    dialog = xbmcgui.Dialog()
-
     process = bt.info(address)
 
     log_completed_process(process)
 
     if process.returncode != 0:
-        dialog.notification(
-            heading=plugin.name,
-            message='failed to get information',
-            icon=xbmcgui.NOTIFICATION_ERROR
-        )
+        plugin.notification('failed to get information', NOTIFICATION_ERROR)
         return
 
     # Remove tabs from output as they do not render well in the textviewer
     text = process.stdout.replace('\t', '  ')
 
-    dialog.textviewer(
+    plugin.dialog.textviewer(
         heading=device,
         text=text,
         usemono=True
