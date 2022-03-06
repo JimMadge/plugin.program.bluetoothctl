@@ -1,5 +1,5 @@
 import sys
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, Dict
 import urllib.parse
 import xbmc  # type: ignore
 import xbmcaddon  # type: ignore
@@ -14,7 +14,7 @@ class PluginException(Exception):
 
 
 # Type signature for action functions
-Action = Callable[[dict[str, str]], None]
+Action = Callable[[Dict[str, str]], None]
 
 # Define log levels
 LOGDEBUG = xbmc.LOGDEBUG
@@ -49,7 +49,7 @@ class Plugin:
         self._dialog = xbmcgui.Dialog()
 
         # Initialise actions dictionary
-        self._actions: dict[str, Callable[[dict[str, str]], None]] = {}
+        self._actions: Dict[str, Callable[[Dict[str, str]], None]] = {}
 
     @property
     def handle(self) -> int:
@@ -59,7 +59,7 @@ class Plugin:
         return self._handle
 
     @property
-    def params(self) -> dict[str, str]:
+    def params(self) -> Dict[str, str]:
         """
         Return query string parameters as a Dict.
 

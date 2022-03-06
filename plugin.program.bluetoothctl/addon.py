@@ -1,6 +1,6 @@
 from functools import wraps
 from subprocess import CompletedProcess
-from typing import Any, Callable
+from typing import Any, Callable, Dict
 import xbmcplugin  # type: ignore
 from resources.lib.plugin import Plugin, Action, LOGDEBUG
 from resources.lib.plugin import NOTIFICATION_INFO, NOTIFICATION_ERROR
@@ -19,7 +19,7 @@ bt = Bluetoothctl(executable=bluetoothctl_path,
 
 
 @plugin.action()
-def root(params: dict[str, str]) -> None:
+def root(params: Dict[str, str]) -> None:
     """
     The default (starting) action.
 
@@ -43,7 +43,7 @@ def root(params: dict[str, str]) -> None:
 
 
 @plugin.action()
-def available_devices(params: dict[str, str]) -> None:
+def available_devices(params: Dict[str, str]) -> None:
     """
     Show available, unpaired devices.
 
@@ -77,7 +77,7 @@ def available_devices(params: dict[str, str]) -> None:
 
 
 @plugin.action()
-def paired_devices(param: dict[str, str]) -> None:
+def paired_devices(param: Dict[str, str]) -> None:
     """
     Show paired devices.
 
@@ -112,7 +112,7 @@ def log_completed_process(process: CompletedProcess[Any]) -> None:
                    f'stderr:\n{process.stderr}')
 
 
-def get_available_devices(bt: Bluetoothctl) -> dict[str, str]:
+def get_available_devices(bt: Bluetoothctl) -> Dict[str, str]:
     """
     Create a dictionary of device name: device address for available devices.
     """
@@ -128,7 +128,7 @@ def get_available_devices(bt: Bluetoothctl) -> dict[str, str]:
     return devices
 
 
-def get_paired_devices(bt: Bluetoothctl) -> dict[str, str]:
+def get_paired_devices(bt: Bluetoothctl) -> Dict[str, str]:
     """
     Create a dictionary of device name: device address for paired devices.
     """
@@ -145,7 +145,7 @@ def get_paired_devices(bt: Bluetoothctl) -> dict[str, str]:
 
 
 @plugin.action()
-def device(params: dict[str, str]) -> None:
+def device(params: Dict[str, str]) -> None:
     """
     Device view. Presents a list of actions to take which depend on whether the
     device is paired or not.
@@ -218,7 +218,7 @@ def device(params: dict[str, str]) -> None:
 
 
 # Type signature for device action functions
-DeviceAction = Callable[[dict[str, str]], CompletedProcess[str]]
+DeviceAction = Callable[[Dict[str, str]], CompletedProcess[str]]
 
 
 def device_action(success: str,
@@ -235,7 +235,7 @@ def device_action(success: str,
         nonlocal failure
 
         @wraps(func)
-        def wrapper(params: dict[str, str]) -> None:
+        def wrapper(params: Dict[str, str]) -> None:
             nonlocal success
             nonlocal failure
 
@@ -253,7 +253,7 @@ def device_action(success: str,
 
 @plugin.action()
 @device_action(success=plugin.localise(30310), failure=plugin.localise(30311))
-def connect(params: dict[str, str]) -> CompletedProcess[str]:
+def connect(params: Dict[str, str]) -> CompletedProcess[str]:
     """
     Connect to a device.
 
@@ -270,7 +270,7 @@ def connect(params: dict[str, str]) -> CompletedProcess[str]:
 
 @plugin.action()
 @device_action(success=plugin.localise(30320), failure=plugin.localise(30321))
-def disconnect(params: dict[str, str]) -> CompletedProcess[str]:
+def disconnect(params: Dict[str, str]) -> CompletedProcess[str]:
     """
     Disconnect from a device.
 
@@ -287,7 +287,7 @@ def disconnect(params: dict[str, str]) -> CompletedProcess[str]:
 
 @plugin.action()
 @device_action(success=plugin.localise(30330), failure=plugin.localise(30331))
-def pair(params: dict[str, str]) -> CompletedProcess[str]:
+def pair(params: Dict[str, str]) -> CompletedProcess[str]:
     """
     Pair with a device.
 
@@ -304,7 +304,7 @@ def pair(params: dict[str, str]) -> CompletedProcess[str]:
 
 @plugin.action()
 @device_action(success=plugin.localise(30340), failure=plugin.localise(30341))
-def remove(params: dict[str, str]) -> CompletedProcess[str]:
+def remove(params: Dict[str, str]) -> CompletedProcess[str]:
     """
     Remove (unpair) a device.
 
@@ -321,7 +321,7 @@ def remove(params: dict[str, str]) -> CompletedProcess[str]:
 
 @plugin.action()
 @device_action(success=plugin.localise(30350), failure=plugin.localise(30351))
-def trust(params: dict[str, str]) -> CompletedProcess[str]:
+def trust(params: Dict[str, str]) -> CompletedProcess[str]:
     """
     Trust a device.
 
@@ -338,7 +338,7 @@ def trust(params: dict[str, str]) -> CompletedProcess[str]:
 
 @plugin.action()
 @device_action(success=plugin.localise(30360), failure=plugin.localise(30361))
-def untrust(params: dict[str, str]) -> CompletedProcess[str]:
+def untrust(params: Dict[str, str]) -> CompletedProcess[str]:
     """
     Revoke trust in a device.
 
@@ -354,7 +354,7 @@ def untrust(params: dict[str, str]) -> CompletedProcess[str]:
 
 
 @plugin.action()
-def info(params: dict[str, str]) -> None:
+def info(params: Dict[str, str]) -> None:
     """
     Show information about a device.
 
