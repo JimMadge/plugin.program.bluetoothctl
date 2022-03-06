@@ -77,3 +77,57 @@ msgstr ""
 msgctxt "#30209"
 msgid "Information"
 msgstr ""
+
+# Notifications 303xx
+
+msgctxt "#30310"
+msgid "connecting successful"
+msgstr ""
+
+msgctxt "#30311"
+msgid "connecting failed"
+msgstr ""
+
+msgctxt "#30320"
+msgid "disconnecting successful"
+msgstr ""
+
+msgctxt "#30321"
+msgid "disconnecting failed"
+msgstr ""
+
+msgctxt "#30330"
+msgid "pairing successful"
+msgstr ""
+
+msgctxt "#30331"
+msgid "pairing failed"
+msgstr ""
+
+msgctxt "#30340"
+msgid "removing successful"
+msgstr ""
+
+msgctxt "#30341"
+msgid "removing failed"
+msgstr ""
+
+msgctxt "#30350"
+msgid "trusting successful"
+msgstr ""
+
+msgctxt "#30351"
+msgid "trusting failed"
+msgstr ""
+
+msgctxt "#30360"
+msgid "revoking trust successful"
+msgstr ""
+
+msgctxt "#30361"
+msgid "revoking trust failed"
+msgstr ""
+
+msgctxt "#30370"
+msgid "failed to get information"
+msgstr ""

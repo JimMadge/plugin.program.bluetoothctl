@@ -221,38 +221,38 @@ def device(params: dict[str, str]) -> None:
 DeviceAction = Callable[[dict[str, str]], CompletedProcess[str]]
 
 
-def device_action(infinitive: str,
-                  present: str) -> Callable[[DeviceAction], Action]:
+def device_action(success: str,
+                  failure: str) -> Callable[[DeviceAction], Action]:
     """
     Decorator factory for actions which only call a bluetoothctl function on a
     device.
 
-    infinitive: infinitive of the action, e.g. pair, connect
-    present: Present tense of the action, e.g. pairing, connecting
+    success: Notification message upon success
+    failure: Notification message upon failure
     """
     def decorator(func: DeviceAction) -> Action:
-        nonlocal infinitive
-        nonlocal present
+        nonlocal success
+        nonlocal failure
 
         @wraps(func)
         def wrapper(params: dict[str, str]) -> None:
-            nonlocal infinitive
-            nonlocal present
+            nonlocal success
+            nonlocal failure
 
             process = func(params)
 
             log_completed_process(process)
 
             if process.returncode == 0:
-                plugin.notification(f'{present} successful', NOTIFICATION_INFO)
+                plugin.notification(success, NOTIFICATION_INFO)
             else:
-                plugin.notification(f'{present} failed', NOTIFICATION_ERROR)
+                plugin.notification(failure, NOTIFICATION_ERROR)
         return wrapper
     return decorator
 
 
 @plugin.action()
-@device_action(infinitive='connect', present='connecting')
+@device_action(success=plugin.localise(30310), failure=plugin.localise(30311))
 def connect(params: dict[str, str]) -> CompletedProcess[str]:
     """
     Connect to a device.
@@ -269,7 +269,7 @@ def connect(params: dict[str, str]) -> CompletedProcess[str]:
 
 
 @plugin.action()
-@device_action(infinitive='disconnect', present='disconnecting')
+@device_action(success=plugin.localise(30320), failure=plugin.localise(30321))
 def disconnect(params: dict[str, str]) -> CompletedProcess[str]:
     """
     Disconnect from a device.
@@ -286,7 +286,7 @@ def disconnect(params: dict[str, str]) -> CompletedProcess[str]:
 
 
 @plugin.action()
-@device_action(infinitive='pair', present='pairing')
+@device_action(success=plugin.localise(30330), failure=plugin.localise(30331))
 def pair(params: dict[str, str]) -> CompletedProcess[str]:
     """
     Pair with a device.
@@ -303,7 +303,7 @@ def pair(params: dict[str, str]) -> CompletedProcess[str]:
 
 
 @plugin.action()
-@device_action(infinitive='remove', present='removing')
+@device_action(success=plugin.localise(30340), failure=plugin.localise(30341))
 def remove(params: dict[str, str]) -> CompletedProcess[str]:
     """
     Remove (unpair) a device.
@@ -320,7 +320,7 @@ def remove(params: dict[str, str]) -> CompletedProcess[str]:
 
 
 @plugin.action()
-@device_action(infinitive='trust', present='trusting')
+@device_action(success=plugin.localise(30350), failure=plugin.localise(30351))
 def trust(params: dict[str, str]) -> CompletedProcess[str]:
     """
     Trust a device.
@@ -337,7 +337,7 @@ def trust(params: dict[str, str]) -> CompletedProcess[str]:
 
 
 @plugin.action()
-@device_action(infinitive='revoke trust', present='revoking trust')
+@device_action(success=plugin.localise(30360), failure=plugin.localise(30361))
 def untrust(params: dict[str, str]) -> CompletedProcess[str]:
     """
     Revoke trust in a device.
@@ -369,7 +369,7 @@ def info(params: dict[str, str]) -> None:
     log_completed_process(process)
 
     if process.returncode != 0:
-        plugin.notification('failed to get information', NOTIFICATION_ERROR)
+        plugin.notification(plugin.localise(30370), NOTIFICATION_ERROR)
         return
 
     # Remove tabs from output as they do not render well in the textviewer
