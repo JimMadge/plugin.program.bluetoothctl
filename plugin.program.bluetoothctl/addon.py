@@ -1,9 +1,9 @@
 from functools import wraps
-from subprocess import CalledProcessError, CompletedProcess
-from typing import Callable
+from subprocess import CompletedProcess
+from typing import Any, Callable
 import xbmcgui  # type: ignore
 import xbmcplugin  # type: ignore
-from resources.lib.plugin import Plugin, Action, LOGERROR, LOGDEBUG
+from resources.lib.plugin import Plugin, Action, LOGDEBUG
 from resources.lib.bluetoothctl import Bluetoothctl
 from resources.lib.busy_dialog import busy_dialog
 
@@ -53,13 +53,7 @@ def available_devices(params: dict[str, str]) -> None:
     with busy_dialog():
         process = bt.scan()
 
-    if process.returncode == 0:
-        plugin.log(LOGDEBUG, f'scanning succeeded.\nstdout: {process.stdout}')
-    else:
-        plugin.log(LOGERROR,
-                   f'scanning failed.\nreturn code: {process.returncode}\n'
-                   f'stdout: {process.stdout}'
-                   f'stderr: process.stderr)')
+    log_completed_process(process)
 
     # Get available devices
     devices = get_available_devices(bt)
@@ -105,19 +99,30 @@ def paired_devices(param: dict[str, str]) -> None:
     xbmcplugin.endOfDirectory(plugin.handle)
 
 
+def log_completed_process(process: CompletedProcess[Any]) -> None:
+    command = ' '.join(process.args)
+    if process.returncode == 0:
+        plugin.log(LOGDEBUG, f'{command} successful')
+        plugin.log(LOGDEBUG, f'stdout:\n{process.stdout}')
+    else:
+        plugin.log(LOGDEBUG, f'{command} failed')
+        plugin.log(LOGDEBUG,
+                   f'return code: {process.returncode}\n'
+                   f'stdout:\n{process.stdout}\n'
+                   f'stderr:\n{process.stderr}')
+
+
 def get_available_devices(bt: Bluetoothctl) -> dict[str, str]:
     """
     Create a dictionary of device name: device address for available devices.
     """
-    try:
-        devices = bt.get_devices()
-        plugin.log(LOGDEBUG, 'getting available devices succeeded.'
-                   f'\ndevices: {devices}')
-    except CalledProcessError as e:
-        plugin.log(LOGERROR, f'listing available devices failed.\n'
-                   f'return code: {e.returncode}\n'
-                   f'stdout: {e.stdout}'
-                   f'stderr: {e.stderr})')
+    process = bt.get_devices()
+
+    log_completed_process(process)
+
+    if process.returncode == 0:
+        devices = bt.parse_devices_list(process.stdout)
+    else:
         devices = {}
 
     return devices
@@ -127,15 +132,13 @@ def get_paired_devices(bt: Bluetoothctl) -> dict[str, str]:
     """
     Create a dictionary of device name: device address for paired devices.
     """
-    try:
-        devices = bt.get_paired_devices()
-        plugin.log(LOGDEBUG, 'getting paired devices succeeded.'
-                   f'\ndevices: {devices}')
-    except CalledProcessError as e:
-        plugin.log(LOGERROR, f'listing paired devices failed.\n'
-                   f'return code: {e.returncode}\n'
-                   f'stdout: {e.stdout}'
-                   f'stderr: {e.stderr})')
+    process = bt.get_paired_devices()
+
+    log_completed_process(process)
+
+    if process.returncode == 0:
+        devices = bt.parse_devices_list(process.stdout)
+    else:
         devices = {}
 
     return devices
@@ -236,26 +239,19 @@ def device_action(infinitive: str,
             nonlocal infinitive
             nonlocal present
 
-            address = params['address']
-
             dialog = xbmcgui.Dialog()
 
-            plugin.log(LOGDEBUG,
-                       f'attempting to {infinitive}: {device} {address}')
             process = func(params)
 
+            log_completed_process(process)
+
             if process.returncode == 0:
-                plugin.log(LOGDEBUG, f'{present} successful')
                 dialog.notification(
                     heading=plugin.name,
                     message=f'{present} successful',
                     icon=xbmcgui.NOTIFICATION_INFO
                 )
             else:
-                plugin.log(LOGERROR, f'{present} failed.\n'
-                           f'return code: {process.returncode}\n'
-                           f'stdout: {process.stdout}\n'
-                           f'stderr: process.stderr)')
                 dialog.notification(
                     heading=plugin.name,
                     message=f'{present} failed',
@@ -381,17 +377,16 @@ def info(params: dict[str, str]) -> None:
     dialog = xbmcgui.Dialog()
 
     process = bt.info(address)
+
+    log_completed_process(process)
+
     if process.returncode != 0:
-        plugin.log(LOGERROR,
-                   f'failed to get information for {device} {address}')
         dialog.notification(
             heading=plugin.name,
             message='failed to get information',
             icon=xbmcgui.NOTIFICATION_ERROR
         )
         return
-    else:
-        plugin.log(LOGDEBUG, f'fetched information for {device} {address}')
 
     # Remove tabs from output as they do not render well in the textviewer
     text = process.stdout.replace('\t', '  ')

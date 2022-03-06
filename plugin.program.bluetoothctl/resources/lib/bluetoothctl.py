@@ -41,33 +41,29 @@ class Bluetoothctl:
                    'scan', 'on']
         return subprocess.run(command, **self._run_args)
 
-    def get_devices(self) -> dict[str, str]:
+    def get_devices(self) -> CompletedProcess[Any]:
         """
         List available devices.
 
-        Returns: Dict of available device.
-
-        Raises:
-            CalledProcessError: if bluetoothctl has a non-zero exit status.
+        Returns: A CompletedProcess instance containing the result of the
+            command.
         """
         command = [self.executable, 'devices']
 
-        process = subprocess.run(command, check=True, **self._run_args)
-        return self.parse_devices_list(process.stdout)
+        process = subprocess.run(command, **self._run_args)
+        return process
 
-    def get_paired_devices(self) -> dict[str, str]:
+    def get_paired_devices(self) -> CompletedProcess[Any]:
         """
         List paired devices
 
-        Returns: Dict of available device.
-
-        Raises:
-            CalledProcessError: if bluetoothctl has a non-zero exit status.
+        Returns: A CompletedProcess instance containing the result of the
+            command.
         """
         command = [self.executable, 'paired-devices']
 
-        process = subprocess.run(command, check=True, **self._run_args)
-        return self.parse_devices_list(process.stdout)
+        process = subprocess.run(command, **self._run_args)
+        return process
 
     @staticmethod
     def parse_devices_list(stdout: str) -> dict[str, str]:
