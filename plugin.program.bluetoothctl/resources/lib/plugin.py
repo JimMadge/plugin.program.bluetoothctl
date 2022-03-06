@@ -168,9 +168,13 @@ class Plugin:
         action: Name of the action (as used in the @action decorator).
         kwargs: Arguments to pass.
         """
-        params = urllib.parse.urlencode(
-            ({'action': action} if action else {}) | kwargs
-        )
+        # Python > 3.9 only
+        # params = urllib.parse.urlencode(
+        #     ({'action': action} if action else {}) | kwargs
+        # )
+        params_dict = {'action': action} if action else {}
+        params_dict.update(kwargs)
+        params = urllib.parse.urlencode(params_dict)
         url = ''.join([self._base_url, '?', params])
         return url
 
